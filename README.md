@@ -85,13 +85,13 @@ flowchart LR
 
 ---
 
-## ✍️ 글의 세 기준 (한준 2026-09-04)
+## ✍️ 글의 세 기준 (한준 2026-09-04 · 09-05 "3가지에 집중")
 
 | 기준 | 한 줄 | 어디에 |
 |---|---|---|
-| **우리만의 강한 제안** | 이 발주처 · 이 과업 · 우리 실적 셋이 다 들어가야만 나오는 문장. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`writing.md`](skills/vax-proposal/references/writing.md) §3 색채 · 점검표 |
-| **pain point는 웹에서 찾는다** | RFP에 없지만 발주처가 실제로 필요로 하는 것(로드맵·기사·지자체 계획)을 출처와 함께 적는다 | `SKILL.md` P3.5 · `03b_방향전략.md` §0 |
-| **대학생 강의처럼, 발표하듯** | 꼭 필요한 전문용어만 그 용어로. 나머지는 풀어 쓴다. 심사장에서 소리 내 읽어 어색하면 다시 쓴다 | [`writing.md`](skills/vax-proposal/references/writing.md) §4 「대학생 강의처럼」·「발표 낭독 검사」 |
+| **RFP 기준 인사이트 — 기관을 웹에서 읽는다** | RFP 고유명사를 출발점으로 기관 홈페이지·보도자료·전년도 같은 사업·감사/회의록·상위 계획을 읽고, 「RFP 문장 ↔ 확인한 사실 ↔ 숨은 필요」로 배점 항목에 연결한다. 연결 안 되면 버린다 | [`writing.md`](skills/vax-proposal/references/writing.md) §2 → `03a_페인포인트.md` |
+| **VAXPORT만의 색 — 카드 × 페인포인트** | 실물·등록·실적·사람·방식 카드에 「경쟁사가 못 쓰는 이유」를 붙이고, 페인포인트와 교차해 아이디어 열 개에서 셋을 고른다. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`writing.md`](skills/vax-proposal/references/writing.md) §3 → `03b_방향전략.md` |
+| **AI 같지 않은 문장 — 말로 먼저** | 기억할 문장 하나 → 말로 먼저 → 구체에서 시작 → 한 사람 시점 → 소리 내어 읽기. AI 티는 낱말·리듬·구조 세 층에서 잡는다 | [`writing.md`](skills/vax-proposal/references/writing.md) §4 · `proposal-critic` A1~A9 |
 
 ---
 
@@ -110,7 +110,7 @@ flowchart LR
 skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 복사하는 유일한 폴더)
   SKILL.md                        절차 P0~P6 · 원칙 7 (Claude가 읽는 두뇌)
   references/
-    writing.md                  ★ 글 — 근거 · 방향(돈→안 할 것→할 것→강점) · 색채 · 대학생 강의처럼 · 낭독 검사 · 검토 ③ 점검표
+    writing.md                  ★ 글 — 세 축: 페인포인트(기관 웹 조사) · 색채(카드 × 페인포인트 → 아이디어) · 문장(말로 먼저 · AI 티 세 층) + 방향 순서 · 점검표
     deck.md                     ★ 덱 — RFP 규칙 우선 · 제목 사슬 · 본문 전체 수록 · 도식 14종 · 색·글꼴·헤더·쪽번호 · 변주 · 완성 검사
     review-rubric.md              채점 — P5 페르소나 고정 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
     material-pack.md              서버 ↔ 스킬 계약 — 재료 팩 열 개 절 + RFP 원문 자식 페이지
