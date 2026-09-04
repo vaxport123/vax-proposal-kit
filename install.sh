@@ -39,11 +39,14 @@ copy_skill_dir(){ # $1=repo_root  $2=dest_name
   if [ -z "${src:-}" ] || [ ! -d "$src" ]; then
     log "⚠ SKILL.md를 못 찾음 — 수동 확인 필요: $repo"; return 1
   fi
-  for pair in "claude:$CLAUDE_DIR:$HAS_CLAUDE" "codex:$CODEX_DIR:$HAS_CODEX"; do
-    local key="${pair%%:*}" rest="${pair#*:}" base="${rest%%:*}" ok="${rest##*:}"
+  # 콜론으로 묶어 풀던 방식은 set -u 에서 "rest: unbound variable"로 죽었다(2026-09-04 실측 — 첫 설치가 여기서 멈춤).
+  # 경로에 콜론이 들어갈 수도 있어(Windows) 묶지 않고 키별로 고른다.
+  local key base ok dest
+  for key in claude codex; do
     case ",$TARGETS," in *",$key,"*) : ;; *) continue ;; esac
+    if [ "$key" = claude ]; then base="$CLAUDE_DIR"; ok="$HAS_CLAUDE"; else base="$CODEX_DIR"; ok="$HAS_CODEX"; fi
     [ "$ok" = 1 ] || { log "· $key 환경 없음 → 건너뜀"; continue; }
-    local dest="$base/$name"
+    dest="$base/$name"
     if [ -d "$dest" ] && [ "$FORCE" = 0 ]; then log "· 이미 설치됨(스킵): $dest"; continue; fi
     mkdir -p "$base"; rm -rf "$dest"; cp -R "$src" "$dest"
     log "✓ 설치: $dest"

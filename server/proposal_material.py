@@ -34,9 +34,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VERSION = "2026-09-04-v1"
+VERSION = "2026-09-04-v3"
 NEED = "⚠️ 확인필요"
 PACK_TITLE = "📦 제안 재료 팩"
+RFP_TITLE = "📄 RFP 원문(추출)"
 STAMP_HEAD = "판본: "
 
 EVAL_DIR = os.environ.get("BID_EVAL_DIR", "/var/lib/vax/eval")
@@ -427,10 +428,10 @@ def _plain(rt):
     return "".join(x.get("plain_text", "") for x in (rt or []))
 
 
-def find_pack(parent_id):
-    """공고 페이지 밑의 재료 팩 자식 페이지 → (page_id, 판본 도장) | (None, "")."""
-    for b in children(parent_id):
-        if b.get("type") == "child_page" and (b["child_page"].get("title") or "").startswith(PACK_TITLE):
+def find_pack(parent_id, title_prefix=PACK_TITLE, kids=None):
+    """공고 페이지 밑의 자식 페이지(제목 접두 일치) → (page_id, 판본 도장) | (None, "")."""
+    for b in (kids if kids is not None else children(parent_id)):
+        if b.get("type") == "child_page" and (b["child_page"].get("title") or "").startswith(title_prefix):
             stamp = ""
             for c in children(b["id"])[:3]:
                 t = c.get("type")
@@ -552,12 +553,55 @@ def sec1(rfp, scope, req, ctx):
 
 
 def _pct(s):
-    m = re.search(r"(\d+(?:\.\d+)?)\s*(%|점)", s or "")
+    """배점 문자열 → 숫자. "90%"·"20점"·"20" 모두 읽는다. 문장이면(숫자 뒤에 글자가 더 있으면) None."""
+    t = (s or "").strip()
+    m = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(%|점)?", t)
     return float(m.group(1)) if m else None
+
+
+def tech_price_from_body(body):
+    """원문에서 기술:가격 비율과 협상적격 기준을 찾는다 → (tech, price, 적격%). 없으면 None."""
+    b = body or ""
+    tech = price = cut = None
+    # 숫자가 앞에 오는 표현("90%의 기술평가")을 먼저, 뒤에 오는 표현("기술평가점수(90점)")을 다음에.
+    # "기술평가와 10%의 가격평가"처럼 뒤 항목 숫자를 잡는 실수를 막는다(실측 R26BK01711646: 10:10 오판).
+    for pat in (r"(\d{2,3})\s*%\s*의\s*기술", r"기술(?:능력)?\s*평가\s*점수\s*\(?\s*(\d{2,3})\s*점", r"기술(?:능력)?\s*평가\s*\(?\s*(\d{2,3})\s*(?:%|점)"):
+        m = re.search(pat, b)
+        if m:
+            tech = float(m.group(1)); break
+    for pat in (r"(\d{1,3})\s*%\s*의\s*가격", r"가격\s*평가\s*점수\s*\(?\s*(\d{1,3})\s*점", r"가격\s*평가\s*\(?\s*(\d{1,3})\s*(?:%|점)"):
+        m = re.search(pat, b)
+        if m:
+            price = float(m.group(1)); break
+    m = re.search(r"배점한도의\s*(\d{2,3})\s*%", b)
+    if m:
+        cut = float(m.group(1))
+    return tech, price, cut
+
+
+SCORE_WORDS = ("평점", "배점", "평가기준", "평가 기준", "평가항목", "평 가 항 목")
+
+
+def score_tables_from_body(body, limit=8):
+    """원문 마크다운 표 중 배점·평점·평가기준이 든 표만 그대로 뽑는다(한준 2026-09-04 "정량 세부표는 RFP에 있다")."""
+    out, cur = [], []
+    for ln in (body or "").splitlines() + [""]:
+        if ln.lstrip().startswith("|"):
+            cur.append(ln.strip())
+            continue
+        if cur:
+            head = " ".join(cur[:3])
+            if any(w in head for w in SCORE_WORDS) and len(cur) >= 3:
+                out.append(cur)
+            cur = []
+        if len(out) >= limit:
+            break
+    return out
 
 
 def sec2(rfp, req, ctx):
     o = [h2(2), ""]
+    body = rfp.get("_body") or ""
     items = rfp.get("eval_items") or []
     if not items and req.get("evaluation"):
         items = [{"item": e.get("item"), "points": e.get("points"), "factor": "", "quote": e.get("quote")} for e in req["evaluation"]]
@@ -579,23 +623,38 @@ def sec2(rfp, req, ctx):
         m = re.search(r"기술(?:능력)?\s*평가\s*(\d+(?:\.\d+)?)\s*(?:%|점)", q)
         if m and tech is None:
             tech = float(m.group(1))
-        if v is not None and ("%" in pts or "점" in pts):
+        if v is not None:
             total_all += v
             if not sub:
                 total_top += v
         rows.append((name, pts, e.get("factor") or "", _quote(q), "세부" if sub else ""))
     o += table(("평가항목", "배점", "세부기준", "근거", "구분"), rows)
     o.append("")
+    bt, bp, cut = tech_price_from_body(body)
+    if tech is None and bt is not None:
+        tech = bt
+    if price is None and bp is not None:
+        price = bp
     if tech is None and price is not None and abs(total_top - 100) < 0.01:
         tech = 100 - price
     if tech is not None and price is not None:
-        o.append(f"기술 : 가격 = **{tech:g} : {price:g}** (배점표 원문 기준)")
+        o.append(f"기술 : 가격 = **{tech:g} : {price:g}** (원문 기준)")
     else:
-        o.append(f"기술:가격 비율 — {NEED} (배점표에서 자동으로 못 읽음)")
+        o.append(f"기술:가격 비율 — {NEED} (원문에서 자동으로 못 읽음)")
+    if cut is not None and tech is not None:
+        o.append(f"협상적격 기준: 기술 배점한도의 {cut:g}% 이상 = **{tech * cut / 100:g}점** (원문 「배점한도의 {cut:g}%」)")
     o.append(f"배점 합계(자동 합산, 참고): 상위 항목 {total_top:g} · 세부 포함 {total_all:g}. "
              "「세부」 표시는 원문에 배점한도·소항목 표현이 있는 것(기계 판정). 정성·정량 구분은 P1에서 사람이 한다.")
-    if total_top and abs(total_top - 100) > 0.01 and total_top < 200:
+    tech_only = tech is not None and price is not None and abs(total_top - tech) < 0.01
+    if total_top and not tech_only and abs(total_top - 100) > 0.01 and total_top < 200:
         ctx["gaps"].append(f"상위 배점 합계가 {total_top:g}(100 아님) — 항목 누락 또는 상위·세부 중복. P1에서 원문 대조")
+    tables = score_tables_from_body(body)
+    if tables:
+        o += ["", f"**정량·정성 세부 배점표 — 원문 표 {len(tables)}개 그대로(신용등급 평점·실적 건수 단계·세부 항목 배점). P2 실점 계산은 이 표로 한다.**"]
+        for t in tables:
+            o += [""] + t
+    elif body:
+        ctx["gaps"].append("원문에서 배점·평점 표를 찾지 못했다 — 정량 세부 기준(신용등급·실적 건수)은 제안요청서를 직접 본다")
     return o
 
 
@@ -935,6 +994,10 @@ def sec9(p, rfp, scope, rfp_key, note, ctx, now):
     srcs = rfp.get("_src") or []
     o.append(f"- RFP 원문(서버가 읽은 파일): {', '.join(srcs) if srcs else '(없음)'}")
     o.append(f"- 제안요청서 판본 도장: `{ctx['stamp']}`" + (f" — {note}" if note else ""))
+    if rfp.get("_body"):
+        o.append(f"- **RFP 원문(추출 마크다운, {len(rfp['_body']):,}자)**: 이 공고 페이지의 자식 페이지 「{RFP_TITLE} — {ctx['no']}」 (서버가 함께 쓴다. hwp를 열 필요 없이 이것으로 P1 검산·P4 인용)")
+    else:
+        o.append(f"- RFP 원문(추출) — {NEED}: 읽기 캐시에 본문이 없다. 첨부문서 링크의 hwp를 직접 본다")
     if scope.get("src"):
         o.append(f"- 담당자 스레드에서 올린 문서: {scope.get('src')} ({scope.get('at') or ''})")
     for name, url in _links(p, "첨부문서")[:10]:
@@ -1004,6 +1067,15 @@ def market_for(title, org, presmt, mthd, div_text):
     except Exception as e:  # noqa: BLE001
         print(f"  [warn] 학습 DB 신호 실패: {str(e)[:80]}")
     return m_lines, l_lines
+
+
+def build_rfp_doc(no, title, rfp, stamp):
+    """RFP 원문(추출) 자식 페이지 본문. 첫 문단은 판본 도장. 서버 경로·파일명 외 내부 정보는 넣지 않는다."""
+    body = rfp.get("_body") or ""
+    head = [f"# {RFP_TITLE} — {no}", "", f"{STAMP_HEAD}{stamp}",
+            f"공고 「{title}」의 제안요청서·공고문을 서버가 읽어 마크다운으로 바꾼 것. 읽은 파일: {', '.join(rfp.get('_src') or []) or '(미상)'}. "
+            "표·번호는 원문 구조를 따르되 hwp 서식은 사라졌다 — 배점·자격·산출물 수치는 이 본문을 근거로 인용한다.", "", "---", ""]
+    return "\n".join(head) + body.strip() + "\n"
 
 
 def build_pack(page, sources, today=None, now=None, use_market=True):
@@ -1086,13 +1158,26 @@ def run_one(page, sources, commit, out_dir, force, today=None):
         if not out_dir:
             sys.stdout.write(md)
         return "dry"
-    old_id, old_stamp = find_pack(page["id"])
-    if old_id and old_stamp == stamp and not force:
+    kids = children(page["id"])
+    old_id, old_stamp = find_pack(page["id"], PACK_TITLE, kids)
+    rfp_id, rfp_stamp = find_pack(page["id"], RFP_TITLE, kids)
+    rfp = pick_rfp(sources["rfp"] or {}, no, ingest_stamp((sources["scope"] or {}).get(no) or {}))[1]
+    need_rfp = bool(rfp.get("_body")) and (force or rfp_stamp != stamp)
+    if old_id and old_stamp == stamp and not force and not need_rfp:
         print(f"  [skip] 같은 판본의 재료 팩이 이미 있다({stamp}) — --force 로 다시 쓴다")
         return "skip"
-    title = f"{PACK_TITLE} — {no}"
-    pid, url = write_pack(page["id"], title, md, old_id=old_id)
-    print(f"  ✅ 위키에 썼다: {url or pid}" + (f" (옛 팩 보관 처리: {old_id})" if old_id else ""))
+    if not (old_id and old_stamp == stamp and not force):
+        title = f"{PACK_TITLE} — {no}"
+        pid, url = write_pack(page["id"], title, md, old_id=old_id)
+        print(f"  ✅ 위키에 썼다: {url or pid}" + (f" (옛 팩 보관 처리: {old_id})" if old_id else ""))
+    if need_rfp:
+        rmd = build_rfp_doc(no, _txt(p, "공고명"), rfp, stamp)
+        bad = forbidden(rmd)
+        if bad:
+            print(f"  ⛔ RFP 원문에 공개 금지 정보: {' · '.join(bad)} — 원문 페이지는 쓰지 않음")
+        else:
+            rid, rurl = write_pack(page["id"], f"{RFP_TITLE} — {no}", rmd, old_id=rfp_id)
+            print(f"  📄 RFP 원문 페이지: {rurl or rid} ({len(rfp['_body']):,}자)" + (f" (옛 원문 보관: {rfp_id})" if rfp_id else ""))
     return "written"
 
 
@@ -1135,7 +1220,7 @@ def _fake_sources():
                                 {"item": "경영상태", "points": "5점", "factor": "", "quote": "경영상태–배점한도: 5점"}],
                  "toc": ["사업 이해", "수행 방안"], "limits": {"pages": "50쪽", "format": "PDF"},
                  "writing_rules": {"forbidden": ["업체명 노출"], "abbr_explain": True},
-                 "keywords": ["웹VR", "조선왕릉"], "_src": ["a.hwpx"], "_body": "가. 제출서류\n[별지 제9호 서식] 인력 총괄표\n"},
+                 "keywords": ["웹VR", "조선왕릉"], "_src": ["a.hwpx"], "_body": "가. 제출서류\n[별지 제9호 서식] 인력 총괄표\n기술능력평가 90점 가격평가 10점 배점한도의 85% 이상\n| 평가항목 | 기업 신용평가등급 | 평점 |\n|---|---|---|\n| 경영상태 | B- | 3 |\n"},
                 "R26BK0001#||0": {"tasks": [], "eval_items": []}},
         "scope": {"R26BK0001": {"src": "a.hwpx", "at": "2026-07-29", "scope": ["과업1", "과업2"], "deliverables": ["정성제안서"]}},
         "req": {"R26BK0001": {"qualifications": [{"req": "업종코드 1469 등록", "quote": "1469"}], "mandatory": [],
@@ -1191,7 +1276,18 @@ def selftest():
     ok("조립: 순서 유지", [md.index(f"## {s}") for s in SECTIONS] == sorted(md.index(f"## {s}") for s in SECTIONS))
     ok("조립: 도장 첫 문단", f"{STAMP_HEAD}R26BK0001#a.hwpx|2026-07-29|2#" in md and stamp.endswith(VERSION))
     ok("조립: 기술:가격 비율", "90 : 10" in md)
+    ok("배점: 단위 없는 숫자", _pct("20") == 20 and _pct("90%") == 90 and _pct("배점한도: 5점") is None)
+    ok("원문: 90%의 기술평가와 10%의 가격평가", tech_price_from_body("평가비율은 90%의 기술평가와 10%의 가격평가로 한다. 배점한도의 85% 이상") == (90.0, 10.0, 85.0))
+    ok("원문: 기술평가점수(90점)", tech_price_from_body("종합평가점수(100점)는 기술평가점수(90점)과 입찰가격 평가점수(10점)")[:2] == (90.0, 10.0))
+    ok("원문: 기술평가(90점)", tech_price_from_body("기술능력평가 90점 · 가격평가 10점 · 배점한도의 85% 이상인 자")[0] == 90.0)
+    tb = score_tables_from_body("x\n| 평가항목 | 기업 신용평가등급 | 평점 |\n|---|---|---|\n| 경영상태 | A+ | 5 |\n\n| 연번 | 도서명 |\n|---|---|\n| 1 | USB |\n")
+    ok("원문: 배점 표만 추출", len(tb) == 1 and "신용평가등급" in tb[0][0])
+    rd = build_rfp_doc("R26BK0001", "제목", {"_body": "본문", "_src": ["a.hwp"]}, "S")
+    ok("RFP 원문 페이지: 도장·본문", rd.startswith(f"# {RFP_TITLE} — R26BK0001") and f"{STAMP_HEAD}S" in rd and rd.rstrip().endswith("본문"))
     ok("조립: 세부 항목은 상위 합계에서 제외", "상위 항목 100 · 세부 포함 105" in md)
+    ok("조립: 협상적격 76.5", "76.5점" in md)
+    ok("조립: 원문 배점표 실림", "세부 배점표 — 원문 표 1개" in md and "| 경영상태 | B- | 3 |" in md)
+    ok("조립: §9 원문 페이지 안내", RFP_TITLE in md.split("## 9.")[1])
     ok("열쇳말: 강한/약한 분리", keywords_of("조선왕릉 웹VR 콘텐츠 제작 용역", {"keywords": ["웹VR"], "tasks": [{"req": "기획 문서 데이터 납품"}]}, {})[0] == ["웹VR", "조선왕릉"])
     ok("일치 점수: 강한 것 없으면 0", match_score(["웹VR"], ["데이터"], "데이터 가공 사업") == (0, []))
     ok("조립: 업종코드 보유/미보유", "| 1469 | 보유 |" in md and "9999 | 미보유" in md)

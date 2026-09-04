@@ -28,6 +28,7 @@ bash install.sh --list                          # 무엇이 깔리는지 미리�
 bash install.sh --no-fonts                      # 글꼴은 빼고
 ```
 글꼴은 설치 뒤 Figma·PowerPoint·브라우저를 다시 열면 보인다(`fonts/README.md`).
+설치가 끝나면 `bash doctor.sh`로 점검한다 — 스킬·글꼴·파이썬·렌더러·저장소 최신 여부를 보고, Notion·Figma 커넥터는 Claude 안에서 확인하는 방법을 알려 준다.
 
 또는 기존 `vax-wiki-gateway/skills/skills.tsv`에 이 저장소를 `git` 한 줄로 등록하면
 직원은 늘 쓰던 `install.sh`로 함께 받는다.
@@ -57,6 +58,10 @@ server/                       서버에 둘 것 (여기서는 초안·명세만 
 templates/company-intro/      회사소개서 마스터 v3(HTML, 발표 톤·슬라이드 구조 참고) — 직원 PC에 설치되지 않음
 fonts/                        제안 슬라이드 글꼴 Freesentation·Paperlogy(각 9굵기 TTF, SIL OFL) — install.sh 가 사용자 글꼴 폴더에 자동 설치
   install-fonts.sh / .ps1      macOS·Linux / Windows 설치기(관리자 권한 불필요)
+assets/photos/                회사 사진 81장(회사소개서 마스터에서 추출, MANIFEST.md에 사업별 캡션) — 슬라이드·발표자료용
+scripts/extract_assets.py     위 사진을 HTML에서 다시 뽑는 스크립트(손으로 고치지 않는다)
+doctor.sh                     설치 점검: 스킬·글꼴·파이썬·렌더러·저장소 최신 여부 + 커넥터 확인 방법 안내
+bids/                         (git 제외) 사업 폴더 — _STATE.md · 01_평가표 · 02_가점진단 · 03_레퍼런스매핑 · 04_제안서 · logs/
 agents/                       대표가 만든 agent.md 들 (규약은 agents/README.md)
 loops/                        대표가 만든 루프·반복 절차 (규약은 loops/README.md)
   bid-loop/                    ★ /bid-loop 하네스 — P1~P6 게이트 · _STATE 상태 기계 · 심사 루브릭 · 야간 실행 래퍼
