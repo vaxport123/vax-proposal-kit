@@ -99,6 +99,18 @@ Figma MCP로 읽어 공통 문법을 뽑았다. **새 덱은 이 문법을 기�
 - 만들기 전에 `07_슬라이드계획_vN.md`(제목 사슬 · 장별 유형·도식·사진·초안 문단 번호 · RFP 요구 ID 대응표)를 `proposal-critic`(mode deck)로 검토한다. 덱을 만든 뒤 고치는 것보다 계획에서 고치는 것이 싸다.
 - 덱 파일: https://www.figma.com/slides/X1gbJJ0suIxbIeT75bkNzC (순천캠퍼스 VR 초안 v4, 24장)
 
+### 7. 덱 v2 46장을 만들며 확인한 것 (2026-09-04 밤 · 순천캠퍼스 VR · https://www.figma.com/slides/8uXlvJ6fp2Z2DC1LHZL41n)
+- **SVG는 `use_figma` 코드에 붙이지 않고 `upload_assets`로 올린다.** `count: N`으로 URL을 받아 `curl -F "file=@fig.svg;filename=이름.svg;type=image/svg+xml"`로 보내면 **페이지 루트에 파일명 그대로 이름 붙은 FRAME**(편집 가능한 벡터·텍스트)이 생긴다. 그다음 스크립트에서 `slide.appendChild(node)` → `rescale(폭/node.width)` → `x·y`. 30장을 한 번에 올리고 한 스크립트로 옮기면 끝난다(코드 50,000자 제한을 피한다).
+- **뼈대 먼저**: `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스)로 빈 슬라이드 46장을 만들고 **이름과 id 표를 받아 둔다.** 같은 스크립트 안에서 `getSlideGrid()`는 갱신 전 값(0)을 돌려주니 다음 호출에서 확인한다.
+- **행(장)별로 스크립트를 병렬로 보낸다**(5개 동시). 슬라이드는 독립 서브트리라 안전했다. 스크립트 하나가 중간에 죽으면 그 슬라이드에 부분 생성물이 남는다 → 다시 돌리기 전에 `fig`를 뺀 자식을 지운다.
+- **도식 배치 규칙(코드)**: 폭 1728로 늘렸을 때 높이 ≤400이면 전폭 + 본문 아래, 아니면 폭 1120 왼쪽 + 본문 오른쪽(x 1256, 폭 568). 본문 영역은 y 300~940. 그래도 안 들어가면 `rescale`로 높이를 맞춘다. 표가 주인공인 장(요구 대조표)은 본문을 발표자 노트로 보내고 전폭으로.
+- **글자 크기 하한**: 폭 1120으로 줄인 표(14px 기준)는 슬라이드에서 13px가 된다 — 읽기 힘들다. 표는 1728 전폭 또는 두 장으로 나눈다(대응표 12행 → 6행씩).
+- **도식 안 텍스트 편집**: SVG에서 온 TEXT 노드는 `getStyledTextSegments(["fontName"])`로 글꼴을 먼저 로드한 뒤 `characters`를 바꾼다. 내부 표기(⚠️ 확인필요)가 표 셀에 남는 일이 있으니 마지막에 전 장 텍스트 검색으로 잡는다.
+- **시그니처·사진은 `upload_assets(nodeIds, scaleMode)`** — 시그니처 FIT(46곳 한 번에), 사진 FILL. `curl -F file=@…`를 URL마다 한 번. 10분 안에 보내야 한다.
+- **사진 검증**: 제조사 페이지에서 `WebFetch`로 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920 이미지였다). 넣기 전 `screenshot`으로 한 번 보고, 아니면 빼고 MANIFEST에 「미확인 → 제외」로 적는다.
+- **발표자 노트**: `slide.speakerNotes`(마크다운 불릿)에 「슬라이드 요점」과 ⚠️ 확인필요를 넣는다. 슬라이드 본문에는 내부 표기를 남기지 않는다.
+- 검사 스크립트: 형제 겹침(사진·덮개·시그니처·결론 바 배경은 제외)·경계 이탈·내부 표기 잔존·쪽번호 유무를 한 번에 돌린다(`figma_slides_helpers.js` `leftovers`).
+
 ### 참고 덱 (읽기용 링크 · Figma MCP 회사 계정으로 접근)
 - 재도전 인식개선 콘텐츠 제작 및 확산 (2026-09) — https://www.figma.com/slides/BN80Dl0GVyKdoucXKPpsFg
 - 우정종사원 맞춤형 생명지킴이 교육 영상 제작 (2026-09) — https://www.figma.com/slides/rNBq9cTJOZeg7wtDiPyjmB
