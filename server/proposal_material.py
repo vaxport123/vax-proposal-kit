@@ -799,9 +799,12 @@ def sec5(strong, weak, facts, certs, projects, refidx, ctx, today):
             o.append("")
         people = next((s for s in refidx if s["title"].startswith("I.")), None)
         if people and people["rows"]:
-            o.append("### 5-⑤ 인력 카드 (색인 §I — 기준일은 색인 상단 참조. 2026-08-22 인력구성 최신본과 대조할 것)")
+            o.append("### 5-⑤ 인력 카드 (색인 §I — 기준 문서·기준일은 색인의 §I 머리 인용문 참조)")
             o += table(tuple(people["rows"][0]), people["rows"][1:]) + [""]
-            ctx["gaps"].append("인력 카드(색인 §I)는 2026-07-27 기준 — 2026-08-22 「인력구성 최신본」과 다를 수 있다. 투입인력표 작성 전 대조")
+            flagged = [r[0] for r in people["rows"][1:] if any("⚠️" in c for c in r)]
+            if flagged:
+                ctx["gaps"].append(f"인력 카드(색인 §I)에 ⚠️ 표시 인원 {len(flagged)}명({', '.join(flagged[:6])}) — 담당·이력·4대보험 확인 전에는 투입인력표에 넣지 않는다")
+            ctx["gaps"].append("투입인력표는 입찰공고일 기준 재직 + 4대보험 가입 증빙이 조건 — 색인 §I의 취득일 열과 최신 가입자 명부로 확인")
         ctx["ref_gaps"] = next((s for s in refidx if s["title"].startswith("J.")), None)
     else:
         o.append(f"### 5-④ 레퍼런스 색인 — {NEED} (읽기 실패 또는 미접근). 스킬이 [색인 페이지]({REF_INDEX_URL})를 직접 읽는다.")
