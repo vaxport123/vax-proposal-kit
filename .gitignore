@@ -2,6 +2,7 @@
 *.html
 !skills/**/examples/*.html
 !loops/**/*.html
+!templates/**/*.html   # 템플릿 원본(회사소개서 마스터)은 산출물이 아니다
 bids/
 __pycache__/
 *.pyc
