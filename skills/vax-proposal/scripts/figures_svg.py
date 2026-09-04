@@ -14,7 +14,7 @@
 · 도식은 데이터의 표현이다. 라벨만 있으면 그릴 수 있고, 고치면 따라 바뀐다(그림 파일은 안 바뀐다).
 · 자립 SVG라 브라우저·PDF·노션·Figma에서 그대로 나온다. 외부 요청 0, 라이선스 문제 0.
 · 서버 `proposal_figures.py`(HTML/CSS 도식 10종)와 **같은 계약**(`type` + 종류별 필드)이다. 거기서 쓰던
-  payload를 그대로 붙여도 그려진다. 여기서는 슬라이드 문법(`figma-handoff.md` §4)에 맞춰 `cards`·`stats`·
+  payload를 그대로 붙여도 그려진다. 여기서는 슬라이드 문법(`deck.md` §3)에 맞춰 `cards`·`stats`·
   `table`·`steps`를 더했다.
 
 ■ 계약
@@ -27,7 +27,7 @@
 
 ■ 사용
   python3 figures_svg.py --selftest
-  python3 figures_svg.py 04_제안서_v4.md --out-dir figs/ --accent "#0068B0"   # 블록마다 figs/fig-01.svg …
+  python3 figures_svg.py 04_제안서_v4.md --out-dir figs/ --accent "#0068B0" --no-title   # 블록마다 figs/fig-01.svg … (--no-title: 슬라이드 제목이 있으니 도식 제목은 안 그린다)
   python3 figures_svg.py 04_제안서_v4.md --list                               # 블록 목록만(종류·제목·줄)
 """
 import argparse
@@ -42,6 +42,7 @@ for _s in (sys.stdout, sys.stderr):
         _s.reconfigure(encoding="utf-8")
 
 NEED = "⚠️ 확인필요"
+DRAW_TITLE = True              # False면 도식 제목을 그리지 않는다(Figma 덱 — 슬라이드 제목과 중복 · deck.md §3). export(no_title=True)가 끈다.
 W = 1200                       # 기본 폭(px). 슬라이드 본문 영역 1728에 맞춰 늘리면 글자도 같이 커진다.
 FONT = "Freesentation, 'Pretendard Variable', Pretendard, 'Malgun Gothic', sans-serif"
 
@@ -55,7 +56,7 @@ PALETTE_VAR = {
 
 
 def palette_hex(accent="#0068B0"):
-    """Figma·독립 파일용. 강조색 하나만 발주처 CI, 나머지는 실측 3덱의 무채색 단계(figma-handoff §1)."""
+    """Figma·독립 파일용. 강조색 하나만 발주처 CI, 나머지는 실측 3덱의 무채색 단계(deck.md §4)."""
     return {
         "accent": accent, "accent_bg": _tint(accent, 0.90), "ink": "#141414", "ink_soft": "#3a3a3a",
         "mid": "#68727f", "surface": "#f4f5f7", "line": "#d3dae3", "paper": "#ffffff",
@@ -76,7 +77,7 @@ def _e(v):
 
 
 # ── 글자 폭 추정과 줄바꿈 ────────────────────────────────────────────────────────────
-# SVG는 자동 줄바꿈이 없다. 한글 1em · 영문/숫자 0.56em · 공백 0.28em(figma-handoff §6과 같은 기준).
+# SVG는 자동 줄바꿈이 없다. 한글 1em · 영문/숫자 0.56em · 공백 0.28em(figma_slides_helpers.js estWidth와 같은 기준).
 def _cw(ch):
     if ch == " ":
         return 0.28
@@ -160,7 +161,7 @@ def _svg(w, h, body, title=""):
 def _title(f, p, w):
     """도식 제목(왼쪽 세로 막대 + 강조색 라벨). 없으면 높이 0."""
     t = str(f.get("title") or "").strip()
-    if not t:
+    if not t or not DRAW_TITLE:
         return "", 0
     s, h = text(18, 2, t, 22, p["accent"], 700, width=w - 24, max_lines=1)
     return rect(0, 0, 5, 30, p["accent"]) + s, h + 10
@@ -362,7 +363,7 @@ def _table(f, p, w, head, rows, first_col_accent=True, need_cols=()):
     ws = f.get("widths") or [1] * n
     tot = float(sum(ws))
     cws = [w * x / tot for x in ws]
-    fs = int(f.get("font") or 15)
+    fs = int(f.get("font") or max(15, round(w / 80)))   # 폭에 비례(1200→15 · 1728→22). 슬라이드에서 18px 아래로 내려가지 않게(deck.md §3)
     hh = 40
     out = [th, rect(0, top, w, hh, p["ink"])]
     x = 0
@@ -605,7 +606,9 @@ def render_block(src, palette=None, width=W):
     return render(fig, palette, width)
 
 
-def export(md_path, out_dir, accent="#0068B0", width=W):
+def export(md_path, out_dir, accent="#0068B0", width=W, no_title=False):
+    global DRAW_TITLE
+    DRAW_TITLE = not no_title
     md = open(md_path, encoding="utf-8").read()
     os.makedirs(out_dir, exist_ok=True)
     p = palette_hex(accent)
@@ -663,6 +666,11 @@ def selftest():
     ok("블록 둘 찾음", len(bl) == 2 and bl[0][2] and bl[1][2] is None)
     ok("깨진 JSON은 경고 SVG", NEED in render_block(bl[1][1], p))
     ok("종류 14", len(TYPES) == 14)
+    global DRAW_TITLE
+    DRAW_TITLE = False
+    ok("no-title이면 도식 제목 없음", 'dy="0">제작 순서</tspan>' not in render({"type": "flow", "title": "제작 순서", "steps": [{"h": "a"}]}, p) and 'dy="0">요구사항 대응표</tspan>' not in render({"type": "matrix", "rows": [{"req": "r", "ans": "a", "ev": "e"}]}, p))
+    DRAW_TITLE = True
+    ok("표 글자는 폭에 비례", 'font-size="22"' in render({"type": "table", "head": ["a"], "rows": [["1"]]}, p, 1728) and 'font-size="15"' in render({"type": "table", "head": ["a"], "rows": [["1"]]}, p))
     print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과(도식 %d종·줄바꿈·확인필요·경고·팔레트·블록)" % (n[0], len(TYPES)))
     return 1 if fails else 0
 
@@ -673,6 +681,7 @@ def main():
     ap.add_argument("--out-dir", default="figs")
     ap.add_argument("--accent", default="#0068B0", help="발주처 CI 강조색(hex). HTML은 토큰 변수를 쓰므로 여기 값은 파일 내보내기에만")
     ap.add_argument("--width", type=int, default=W)
+    ap.add_argument("--no-title", action="store_true", help="도식 제목을 그리지 않는다(Figma 덱용 — 슬라이드 제목과 중복)")
     ap.add_argument("--list", action="store_true", help="블록 목록만")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
@@ -684,7 +693,7 @@ def main():
         for ln, src, fig, err in find_blocks(open(a.src, encoding="utf-8").read()):
             print("%4d줄  %-8s %s %s" % (ln, (fig or {}).get("type", "?"), (fig or {}).get("title", ""), err))
         return 0
-    rows = export(a.src, a.out_dir, a.accent, a.width)
+    rows = export(a.src, a.out_dir, a.accent, a.width, a.no_title)
     for name, ln, t, title, err in rows:
         print("%s  (%d줄 · %s · %s)%s" % (name, ln, t, title, "  ⚠ " + err if err else ""))
     print("%d장 → %s" % (len(rows), a.out_dir))

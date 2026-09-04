@@ -119,7 +119,7 @@ if [ "$HAS_CLAUDE" = 1 ] && ls "$DIR"/agents/*.md >/dev/null 2>&1; then
   done
 fi
 
-# 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/figma-handoff.md §2).
+# 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/deck.md §4).
 # 사용자 계정에만 설치하므로 관리자 권한이 필요 없다. 자세한 것은 fonts/README.md.
 if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then
   hdr "fonts  (Freesentation · Paperlogy)"

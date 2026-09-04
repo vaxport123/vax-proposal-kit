@@ -89,9 +89,9 @@ flowchart LR
 
 | 기준 | 한 줄 | 어디에 |
 |---|---|---|
-| **우리만의 강한 제안** | 이 발주처 · 이 과업 · 우리 실적 셋이 다 들어가야만 나오는 문장. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`distinctiveness.md`](skills/vax-proposal/references/distinctiveness.md) — 규칙 7개 · 점검표 |
+| **우리만의 강한 제안** | 이 발주처 · 이 과업 · 우리 실적 셋이 다 들어가야만 나오는 문장. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`writing.md`](skills/vax-proposal/references/writing.md) §3 색채 · 점검표 |
 | **pain point는 웹에서 찾는다** | RFP에 없지만 발주처가 실제로 필요로 하는 것(로드맵·기사·지자체 계획)을 출처와 함께 적는다 | `SKILL.md` P3.5 · `03b_방향전략.md` §0 |
-| **대학생 강의처럼, 발표하듯** | 꼭 필요한 전문용어만 그 용어로. 나머지는 풀어 쓴다. 심사장에서 소리 내 읽어 어색하면 다시 쓴다 | [`house-style.md`](skills/vax-proposal/references/house-style.md) 「대학생 강의처럼」·「발표 낭독 검사」 |
+| **대학생 강의처럼, 발표하듯** | 꼭 필요한 전문용어만 그 용어로. 나머지는 풀어 쓴다. 심사장에서 소리 내 읽어 어색하면 다시 쓴다 | [`writing.md`](skills/vax-proposal/references/writing.md) §4 「대학생 강의처럼」·「발표 낭독 검사」 |
 
 ---
 
@@ -99,6 +99,7 @@ flowchart LR
 
 | 날짜 | 공고 | 결과 |
 |---|---|---|
+| 2026-09-05 | 순천캠퍼스 VR 덱 두 판 비교 | 24장(네이티브)은 짜임새는 좋고 내용이 빠졌고, 46장(SVG 일괄)은 내용은 다 들어갔는데 하단 1/3 공백·13px 표·제목 중복으로 한 얼굴이 됐다. 원인은 하루에 여덟 번 덧붙인 규칙이 전부 「같게 만드는」 쪽이었기 때문. 규칙 파일 12개 → 글·덱·채점 셋으로 줄이고, 고정 좌표·장수 공식·결론 바 필수를 뺐다. 변주 규칙과 완성 덱 화면 검토를 넣었다 |
 | 2026-09-04 | **순천캠퍼스 VR** (R26BK01711646) | P0~P4 완주. 재료 팩 7초·17,000자, RFP 원문 33,465자 자식 페이지. P1 검산 100점 일치 · P2 실점 2~4 통과 · P3 매칭 12건 · 웹 조사 6건으로 컨셉 도출 · 초안 v1→v4(검토 3회). 이 과정에서 스크립트 결함 4건(배점 단위·기술:가격 어순·원문 미첨부·설치 스크립트 변수)을 잡아 고쳤다 |
 
 ---
@@ -109,22 +110,24 @@ flowchart LR
 skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 복사하는 유일한 폴더)
   SKILL.md                        절차 P0~P6 · 원칙 7 (Claude가 읽는 두뇌)
   references/
+    writing.md                  ★ 글 — 근거 · 방향(돈→안 할 것→할 것→강점) · 색채 · 대학생 강의처럼 · 낭독 검사 · 검토 ③ 점검표
+    deck.md                     ★ 덱 — RFP 규칙 우선 · 제목 사슬 · 본문 전체 수록 · 도식 14종 · 색·글꼴·헤더·쪽번호 · 변주 · 완성 검사
+    review-rubric.md              채점 — P5 페르소나 고정 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
     material-pack.md              서버 ↔ 스킬 계약 — 재료 팩 열 개 절 + RFP 원문 자식 페이지
-    proposal-method.md            돈 → 안 할 것 → 할 것 → 강점 → 전략 → 서술
-    distinctiveness.md          ★ 색채 — AI 초안이 비슷해지는 문제, 규칙 7, 검토 ③ 점검표
-    house-style.md                디자인 토큰 · 「쉬운판」 · 「대학생 강의처럼」 · 발표 낭독 검사
-    review-rubric.md              P5 심사 — 페르소나 고정 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
-    staffing-table.md             투입인력표 서식 구조 (데이터는 위키에만)
-    figma-handoff.md            ★ 실측 3덱 슬라이드 문법 — 발주처 CI 강조색 · Freesentation · 유형 10종
-    guardrails.md                 공개 금지 정보 · 근거 없는 문장 금지 · ⚠️ 확인필요 표기
+    staffing-table.md · reference-index.template.md   서식 구조 (데이터는 위키에만)
+    images.md · figma-howto.md    절차 — 사진 출처·사용권 · Figma MCP 실측 요령
+    guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
+    figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)
+    img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 헬퍼(좌표는 기본값)
     ui_tokens.py                  디자인 정본 사본 (서버 ops/ui_tokens.py ← sync_tokens.sh)
 
 server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)
   proposal_material.py          ★ 도전 공고 → 📦 재료 팩 + 📄 RFP 원문 · LLM 0콜 · 셀프테스트 48건
   systemd/                        vax-proposal-material.timer / .service 사본
-loops/bid-loop/                 ★ /bid-loop 하네스 — _STATE 상태 기계 · 루브릭 · 야간 실행 래퍼
+agents/proposal-critic.md       비판자 — 한글 표현 A1~A8 · AI 디자인 B1~B9 · 완성 덱 화면(PNG) 검토
+loops/bid-loop/                 ★ /bid-loop 하네스 — 운행 규칙 · _STATE 상태 기계 · 야간 실행 래퍼
 fonts/                          Freesentation · Paperlogy 각 9굵기 TTF (SIL OFL) + 설치기
 assets/photos/                  회사 사진 81장 (회사소개서 마스터에서 추출, MANIFEST.md)
 templates/company-intro/        회사소개서 마스터 v3 HTML (발표 톤 참고)
