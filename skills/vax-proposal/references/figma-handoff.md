@@ -83,6 +83,15 @@ Figma MCP로 읽어 공통 문법을 뽑았다. **새 덱은 이 문법을 기�
 - **제안 슬라이드의 강조색은 발주처 CI를 따른다(위 §1).** 회사 토큰(`ops/ui_tokens.py`)은 HTML 초안·사내 문서의 정본이고, Figma 덱에서는 강조색 한 자리만 발주처 색으로 바꾼다. 그 밖의 색(무채색 단계)·글꼴·간격은 새로 만들지 않는다.
 - 공개 금지 정보(`guardrails.md`)는 Figma 파일에도 넣지 않는다 — Figma 링크는 쉽게 밖으로 나간다.
 
+### 6. Figma MCP로 덱을 직접 만들 때 (2026-09-04 순천캠퍼스 VR 덱 24장 실측)
+- 새 Slides 파일은 `create_new_file(editorType: slides)` → 섹션 행을 PART마다 하나씩 먼저 만들고(`createSlideRow` + `row.name`), 행마다 `createSlide(row, col)`로 채운다. 행이 독립이라 **행별 스크립트를 병렬로** 보내도 된다(24장 6호출).
+- 글꼴은 `listAvailableFontsAsync`로 「Freesentation / 7 Bold」식 스타일 이름을 확인하고 전부 `loadFontAsync`한 뒤 쓴다. 로컬에 설치돼 있으면 데스크톱 Figma가 바로 인식한다.
+- **`textAutoResize = "HEIGHT"`를 준 텍스트의 `height`는 스크립트 안에서 갱신되지 않는다(10으로 읽힘).** 제목 아래 부제 위치를 `title.height`로 잡으면 겹친다. 글자 수로 줄 수를 추정해 좌표를 계산한다(한글 1em·영문 0.56em·공백 0.28em 기준, 제목 46px·폭 1728이면 한 줄에 약 37자).
+- 슬라이드 뼈대 함수 하나(`chrome`: 브레드크럼·시그니처·제목·부제·쪽번호)와 `card`·`table`·`bar`(결론 바)·`part`(PART 구분) 헬퍼로 실측 문법을 그대로 재현할 수 있다. 큰 숫자는 카드 폭 290에 56px이면 6자부터 줄바꿈된다 → 44px.
+- 발주처 시그니처는 텍스트 자리표시가 아니라 **빈 사각형을 만들고 `upload_assets(nodeIds, scaleMode FIT)`로 PNG를 채운다.** URL 17개를 받아 `curl -F file=@…`로 한 번에 올리면 끝난다.
+- 내부 표기(「근거: 재료 팩 §…」·`⚠️ 확인필요`)가 덱에 남지 않았는지 마지막에 텍스트 검색으로 확인한다. 확인필요는 발표자 노트로 옮긴다.
+- 덱 파일: https://www.figma.com/slides/X1gbJJ0suIxbIeT75bkNzC (순천캠퍼스 VR 초안 v4, 24장)
+
 ### 참고 덱 (읽기용 링크 · Figma MCP 회사 계정으로 접근)
 - 재도전 인식개선 콘텐츠 제작 및 확산 (2026-09) — https://www.figma.com/slides/BN80Dl0GVyKdoucXKPpsFg
 - 우정종사원 맞춤형 생명지킴이 교육 영상 제작 (2026-09) — https://www.figma.com/slides/rNBq9cTJOZeg7wtDiPyjmB
