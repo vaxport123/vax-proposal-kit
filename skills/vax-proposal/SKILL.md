@@ -61,14 +61,21 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 `references/proposal-method.md`를 따른다. **돈 → 안 할 것 → 할 것 → 쓸 강점** 순서로 방향을 6~10줄로 잡고
 **사용자 동의를 받은 뒤**, 배점 큰 항목 × 우리 강점으로 컨셉 한 줄·차별점 3개 이내·항목별 대응·리스크를 쓴다.
 모든 주장 옆에 근거(재료 팩 §, 레퍼런스매핑 행)를 단다. 루프형이면 방향을 `_STATE.md`에 적고 다음 스텝에서 이어 간다.
+**전략에 들어가기 전에 `references/distinctiveness.md` 규칙 1(이 발주처·이 과업·우리 실적의 고유 관찰 세 가지)을 먼저 채운다.**
+컨셉은 그 세 관찰에서 나와야 한다 — 기술 이름에서 나온 컨셉, 다른 공고에 그대로 옮겨도 말이 되는 컨셉은 다시 쓴다(한준 2026-09-04: "AI로 쓰면 내용과 주장이 다 비슷해진다").
+차별점 셋은 기술 · 수행 방식 · 사람과 인프라, 서로 다른 범주에서 하나씩 고른다(같은 파일 규칙 5).
 
 ### P4 · 초안 + 비판 검토 3회
 목차는 발주처 지정 목차가 있으면 그대로, 없으면 **정성평가 항목 1개 = 챕터 1개**(위원이 채점표와 나란히 보게).
 강점 나열이 아니라 **「RFP가 요구하는 것 → 우리 레퍼런스가 이미 해봤다는 증거」** 구조. 절마다 서술 문단과 슬라이드 요점을
-함께 쓴다(나중에 자르면 문장이 끊긴다). 문체는 `references/house-style.md` 「쉬운판」, 마무리에 `humanize-korean`.
+함께 쓴다(나중에 자르면 문장이 끊긴다). 문체는 `references/house-style.md` 「쉬운판」과 **「대학생 강의처럼」**(꼭 필요한 전문용어만 그 용어로,
+나머지는 아무 지식이 없는 제3자에게 알려 주듯 풀어 쓴다), 마무리에 `humanize-korean`.
+장의 첫 문단은 우리 소개가 아니라 **발주처가 그 항목에서 겪을 문제**로 시작한다(`distinctiveness.md` 규칙 6).
+투입인력 장은 `references/staffing-table.md`의 서식 구조에 위키 인력 데이터를 채운다 — 이름·이력은 재료 팩 §5-⑤와 위키에서만 가져온다.
 초안은 마크다운(`04_제안서_v1.md`)으로 쓴다 — HTML·docx·pptx는 이것을 렌더한 결과다. docx가 필요하면 `doc-gen`으로 변환한다.
 검토 3회는 관점을 **다르게** 둔다: ①누락(대응 없는 정성 항목·언급 안 된 산출물) ②증거(근거 없는 문장·"최적의" 같은 무근거 수식어)
-③차별성(경쟁사도 쓸 수 있는 문장 → 우리만 쓸 수 있는 문장). 회차마다 `v{N+1}`을 새로 만들고 `logs/검토{N}.md`에 남긴다.
+③차별성(경쟁사도 쓸 수 있는 문장 → 우리만 쓸 수 있는 문장 — **`distinctiveness.md`의 점검표 7항목을 `logs/검토3.md`에 채운다.
+회사명 가림 테스트를 통과하지 못한 문단이 하나라도 있으면 고친다**). 회차마다 `v{N+1}`을 새로 만들고 `logs/검토{N}.md`에 남긴다.
 분량이 크면 챕터 단위로 쪼개고 `다음행동: P4-초안(3장부터)`처럼 재개 지점을 남긴다.
 
 ### P5 · 심사위원 채점 — 게이트 ②
@@ -90,6 +97,8 @@ python3 scripts/render_html.py 04_제안서_v4.md 06_제안서.html "제안서 �
 - **공개 금지 정보가 있으면 렌더가 거부된다**(`references/guardrails.md`). 본문을 고친다. 우회하지 않는다.
 - 필요하면 `frontend-design`으로 레이아웃 방향을 다듬고, `references/figma-handoff.md`대로 Figma에 넣는다.
   이 다음부터 **Figma가 정본**이고 세부 조정은 Claude-Figma로 한다. 슬라이드 덱이 따로 필요하면 5장 단위로 쪼개 진행한다.
+- 회사 일반현황·조직·실적 장과 발표자료 톤은 `../../templates/company-intro/`의 회사소개서 마스터(v3)를 참고한다 —
+  슬라이드 구조(일반현황 → 조직·인력 → 기술 → 실적 → 사례)와 「PROOF — 근거 한 줄」 표기법을 가져오고, 색·글꼴은 그 파일이 아니라 회사 토큰을 따른다.
 
 ### 스텝 종료 시 항상 (루프형)
 `_STATE.md` 갱신(현재단계·다음행동·진행중:false·마지막갱신) → `logs/`에 1~5줄 → 사용자에게 3줄 보고
@@ -114,5 +123,8 @@ python3 scripts/render_html.py 04_제안서_v4.md 06_제안서.html "제안서 �
 - `references/proposal-method.md` — 방향→전략→서술
 - `references/review-rubric.md` — P5 채점 절차
 - `references/reference-index.template.md` — P3 색인 구조
-- `references/house-style.md` · `references/guardrails.md` · `references/figma-handoff.md`
+- `references/distinctiveness.md` — 색채: AI 초안이 다 비슷해지는 문제와 규칙 7개 · P4 검토 ③ 점검표
+- `references/staffing-table.md` — 투입인력표(조직도·총괄표·파트 구성) 서식 구조. 데이터는 위키에서
+- `references/house-style.md`(디자인 토큰 · 「쉬운판」 · 「대학생 강의처럼」) · `references/guardrails.md` · `references/figma-handoff.md`
+- `../../templates/company-intro/` — 회사소개서 마스터 v3(발표 톤·슬라이드 구조 참고)
 - `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md` · `run-loop.sh` · `settings.json`

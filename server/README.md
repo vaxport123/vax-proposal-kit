@@ -10,21 +10,48 @@
 - 대신 **정량 지표와 회사 자료만** 모아 「📦 제안 재료 팩」을 위키에 쓴다. → `proposal_material.py`
 - 재료를 만드는 타이머(`vax-bid-doc` · `radar` · `grade` · `learn` · `market` · `bidprc` · `refresh`)는 **그대로 둔다.**
 - `vax-bid-task.timer`(담당자 업무요청)는 초안 존재를 조건으로 보므로, 재료 팩 기준으로 조건을 고칠 때까지 **보류**(한준 결정 대기).
+  고칠 방향: 조건을 「재료 팩이 생성됐을 때」로 바꾸면 "재료 팩 준비됨, Claude에서 시작하세요"라는 새 흐름의 출발 신호가 된다.
 
-## proposal_material.py — 재료 팩 생성기
-- 트리거: 입찰레이더 `진행상태=도전` (+ 우리담당 지정). 이미 팩이 있고 RFP 판본(ingest_stamp)이 같으면 다시 쓰지 않는다.
-- 출처(모두 이미 서버에 있는 것): RFP 읽기 캐시(`rfp_read.json`) · go/no-go 캐시(`gonogo_req.json`) · 채점 결과(bid_grade/bid_score) · 범위·리서치 캐시(`bid_scope.json`·`bid_research.json`) · 회사 팩트 DB · bid_learn 결과 · 서식 manifest.
-  §5·§7의 실적·인력·공백은 위키 「레퍼런스 색인」(https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9)을 Notion API로 읽어 이 공고의 기술요소에 맞는 군집만 고른다. 이 페이지가 정본이라 저장소에 사본을 두지 않는다.
-- 출력: `skills/vax-proposal/references/material-pack.md` 의 H2 아홉 개 목차를 **그대로** 따르는 마크다운. 전략·컨셉·서술은 넣지 않는다.
-- 쓰기 전 공개 금지 검사(서버 주소·포트·토큰·내부 경로)를 통과해야 위키에 쓴다.
-- 1차 배포는 `--dry-run`(stdout 출력)만. 위키 쓰기(`--commit`)는 사람이 결과를 보고 켠다 — 이 저장소의 「자동은 제안/dry-run, 확정은 사람」 원칙.
-- 새 systemd 유닛 `vax-proposal-material.timer`(업무시간 30분마다)로 돈다. 기존 sweep 타이머의 자리를 대신한다.
+## proposal_material.py — 재료 팩 생성기 (작성 완료 · 2026-09-04)
+**LLM 호출 0회.** 있는 데이터를 `material-pack.md` 계약(H2 열 개, 0~9)에 맞춰 모으기만 한다. 셀프테스트 39건.
+서버 임시 폴더에서 도전 공고 `R26BK01695067`로 dry-run 확인(6.7초 · 17,000자 · 블록 135개 · 공개 금지 검사 통과).
+
+- **게이트**: 레이더 `진행상태=도전` + `우리담당` 지정 + `입찰마감일` 전(없으면 통과). `proposal_build._gate_reason`과 같은 판정.
+  `--all`로 게이트를 무시할 수 있다(담당 미지정 공고를 미리 보고 싶을 때).
+- **판본 도장**: `<공고번호>#<제안요청서 도장(bid_doc_ingest)>#<RFP 읽기버전>#<스크립트 버전>`을 팩 첫 문단 「판본:」에 쓴다.
+  같은 도장의 팩이 이미 있으면 건너뛴다(`--force`면 다시 쓴다). 도장이 다르면 옛 팩을 보관(archived) 처리하고 새로 만든다.
+- **출처(전부 서버에 이미 있는 것)**
+  - RFP 읽기 캐시 `rfp_read.json` — 키가 `공고번호` · `공고번호#도장` · `공고번호#도장#읽기버전` 세 형태로 섞여 있어, 도장 일치 → 읽기버전 늦은 것 → 내용 많은 것 순으로 고른다. 불일치면 §8에 적는다.
+  - 자격 캐시 `gonogo_req.json`(참가자격·필수·산출물·일정) · 제안요청서 수집 `bid_scope.json`(과업 범위·작성요령·판본 도장)
+  - 레이더 속성: 판정·판정메모·사업등급·등급근거·GoNoGo 브리핑(■ 가점·정량점수·내정 정황·수익률 / ■ 걸리는 것·되는 것·사업 조건)·요구업종코드·참가제한지역·첨부문서
+  - Notion 덤프(`notion-dump/datasources`): 회사 팩트 · Certifications(만료·90일 임박 ⚠️) · Projects(대외인용금지 제외) · 입찰결과 아카이브
+  - 개찰·학습 DB: `bid_market.analyse/lines`(부가세 제외 환산) · `bid_learn.market_lines`
+  - 위키 「레퍼런스 색인」(Notion API로 표·인용 읽기): 열쇳말 겹침 상위 군집 3개 · §I 인력 카드 · §J 공백(→ §8)
+  - 등록 업종 `bid_quals.json` ↔ 요구업종코드 → 보유/미보유
+- **열쇳말**: 강한 것(RFP 읽기의 keywords + 공고명 낱말)과 약한 것(과업·산출물 낱말)을 나눈다. 실적·군집은 **강한 열쇳말이 하나는 겹쳐야** 고른다.
+  실측: 「기획·관리·데이터」 같은 낱말만으로 고르면 사내 문서까지 걸렸다. 범용 낱말 목록(`STOP`)은 코드에 있다.
+- **쓰기 전 검사**: 공개 금지 패턴(`ops/render_md_page.py FORBIDDEN`의 사본) + 계약 H2 열 개 존재. 하나라도 걸리면 `⛔`를 찍고 쓰지 않는다.
+- **Notion 쓰기**: `bid_radar.notion`/`notion_patch`(토큰을 읽는 곳은 한 군데). 자식 페이지 생성(첫 배치) → 나머지 블록 append(50개·400KB 단위).
+  마크다운 → 블록 변환기는 이 스크립트 안에 있다(제목·표·목록·인용·코드·구분선·굵게·링크). 파이프라인에 기존 변환기가 없어서 새로 썼다.
+- **CLI**
+  ```
+  proposal_material.py --selftest
+  proposal_material.py --list                          # 게이트 통과 목록
+  proposal_material.py --no R26BK… [--out DIR]         # 한 건 dry(stdout 또는 파일)
+  proposal_material.py --no R26BK… --commit [--force]  # 위키에 쓴다 (env BID_MATERIAL_COMMIT=1 도 같음)
+  proposal_material.py --commit                        # 도전 전건(같은 판본은 건너뜀)
+  proposal_material.py --no-ref                        # 레퍼런스 색인을 읽지 않음(빠른 확인)
+  ```
+  기본은 dry다 — 이 저장소의 「자동은 제안/dry, 확정은 사람」 원칙. 로그 기호는 파이프라인 관례(`#` 요약 · `==` 공고 · `[dry]` · `[skip]` · `⛔` · `⚠️`).
+- **의존**: 같은 폴더의 `bid_radar`(Notion 헬퍼) · `bid_bidprc`·`bid_market`·`bid_learn`(시장 지표, 실패하면 `[warn]` 후 그 절만 비움). LLM 모듈은 import하지 않는다.
+- **systemd**: `vax-proposal-material.timer`(업무시간 30분마다, `--commit`)로 돈다. 유닛 파일은 서버 배포 때 sweep 유닛을 본떠 만든다. 기존 sweep 타이머의 자리를 대신한다.
 
 ## sync_tokens.sh — 디자인 토큰 동기화
 서버 `ops/ui_tokens.py` → 이 저장소 `skills/vax-proposal/scripts/ui_tokens.py`. 반대로 하지 않는다.
 동기화 후 `python3 ui_tokens.py --selftest`가 통과해야 커밋한다.
 
-## 배포 순서 (서버에서, 사람이)
-1. `proposal_material.py`를 pipeline 폴더에 두고 `--selftest` → `--dry-run --no <공고>`로 출력 확인.
-2. 출력이 material-pack.md 목차와 맞으면 `--commit`으로 위키에 한 건 써 보고 스킬로 읽어 본다(왕복 검증).
-3. 그다음 `vax-proposal-sweep.timer` 비활성 + `vax-proposal-material.timer` 활성. 순서를 바꾸지 않는다 — 재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다.
+## 배포 순서 (서버에서, 사람이 — 한 단계씩 승인)
+1. `proposal_material.py`를 pipeline 폴더에 두고 `--selftest` → `--no <공고> --out /tmp/…`로 출력 확인. ✅ 2026-09-04 임시 폴더에서 확인 완료(pipeline 폴더에는 아직 안 넣음)
+2. 출력이 material-pack.md 목차와 맞으면 `--commit`으로 위키에 **한 건** 써 보고 `vax-proposal` 스킬로 읽어 본다(왕복 검증). ← **다음 단계, 승인 대기**
+3. `vax-proposal-material.timer` 활성 → 그다음 `vax-proposal-sweep.timer` 비활성. 순서를 바꾸지 않는다 — 재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다.
+4. `vax-bid-task` 조건을 「재료 팩 존재」로 바꾼다(별도 결정).

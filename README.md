@@ -9,14 +9,15 @@
 ## 흐름
 
 ```
-[서버]  입찰레이더 진행상태=도전
-          → proposal_material.py 가 위키 정보를 모아 「📦 제안 재료 팩」 페이지를 그 공고 밑에 쓴다
-[개인]  Claude + vax-proposal 스킬
-          ① 재료 팩을 Notion에서 당겨온다 (직원은 이미 Notion 접근이 있다 — SSH 키 불필요)
-          ② 방향(돈 → 안 할 것 → 할 것 → 강점) → 전략 → 절별 서술 초안
-          ③ 회사 디자인 토큰으로 HTML 디자인 1장 렌더 (scripts/render_html.py)
-          ④ HTML을 Figma에 넣고, 세부 디자인은 Claude-Figma로 조정
+① [ERP]   입찰레이더에서 진행상태를 「도전」으로 바꾼다 (+ 우리담당 지정)
+② [서버]  proposal_material.py 가 30분 안에 위키 정보를 모아 「📦 제안 재료 팩」을 그 공고 페이지 밑에 쓴다 (LLM 0콜)
+③ [담당자] 이 저장소를 clone → install.sh 로 스킬 설치 → Claude에 Notion 커넥터 연결 → "R26BK… 제안 진행" 으로 시작
+④ [Claude] 재료 팩 → P1 평가표 검산 → P2 가점 게이트 → P3 레퍼런스 → 방향·전략(동의) → P4 초안+검토 3회 → P5 심사 게이트
+            → 회사 토큰으로 HTML 초안 1장 (scripts/render_html.py)
+⑤ [Figma]  Figma 커넥터로 HTML을 슬라이드 프레임으로 넣는다 (references/figma-handoff.md)
+⑥ [Figma+Claude] 세부 디자인·발표자료(ppt)는 Claude-Figma로 진행. 이때부터 Figma가 정본
 ```
+(한준 2026-09-04 확정 흐름)
 
 ## 설치 (직원 PC)
 
@@ -41,14 +42,17 @@ skills/vax-proposal/          ★ 우리 스킬
   SKILL.md                     절차·원칙 (Claude가 읽는 두뇌)
   references/material-pack.md  서버 ↔ 스킬 계약: 재료 팩의 고정 목차
   references/proposal-method.md  방향→전략→서술 방법론 (서버 bid_proposal_plan 에서 옮김)
-  references/house-style.md    디자인 토큰 요약 + 「쉬운판」 문체
+  references/house-style.md    디자인 토큰 요약 + 「쉬운판」 문체 + 「대학생 강의처럼」 표현 수위
+  references/distinctiveness.md ★ 색채 — AI 초안이 다 비슷해지는 문제와 규칙 7개, P4 검토 ③ 점검표
+  references/staffing-table.md 투입인력표(조직도·총괄표·파트 구성) 서식 구조 — 데이터는 위키에서
   references/guardrails.md     공개 금지 정보·근거 없는 문장 금지·⚠️ 확인필요
   references/figma-handoff.md  HTML → Figma 삽입·조정 절차
   scripts/ui_tokens.py         디자인 정본 사본 (서버 ops/ui_tokens.py 에서 동기화)
   scripts/render_html.py       마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
 server/                       서버에 둘 것 (여기서는 초안·명세만 관리, 배포는 서버에서)
-  proposal_material.py         도전 공고 → 재료 팩 문서 생성
+  proposal_material.py         ★ 도전 공고 → 재료 팩 (LLM 0콜 · 셀프테스트 39건 · dry-run 확인 완료)
   sync_tokens.sh               ui_tokens.py 정본 → 스킬 사본 동기화
+templates/company-intro/      회사소개서 마스터 v3(HTML, 발표 톤·슬라이드 구조 참고) — 직원 PC에 설치되지 않음
 agents/                       대표가 만든 agent.md 들 (규약은 agents/README.md)
 loops/                        대표가 만든 루프·반복 절차 (규약은 loops/README.md)
   bid-loop/                    ★ /bid-loop 하네스 — P1~P6 게이트 · _STATE 상태 기계 · 심사 루브릭 · 야간 실행 래퍼
@@ -61,6 +65,11 @@ loops/                        대표가 만든 루프·반복 절차 (규약은 
 | ① 가점 (P2) | 정량 실점 합계 ≤ 5.0 | 정성 비중 ≥ 70%면 사람 판단, 아니면 중단(가점미달). 회복가능 실점은 `차단사항`에 기한과 함께 |
 | ② 심사 (P5) | 심사위원 페르소나 채점 총점 ≥ 80 | 재작성 1회(상위 3건만 겨냥) → 그래도 미달이면 중단(심사미달), 사람이 판단 |
 80점은 합격선이 아니라 **착수선**이다. 게이트는 느낌으로 통과시키지 않는다.
+
+## 글의 두 가지 기준 (한준 2026-09-04)
+- **표현**: 꼭 필요한 전문용어만 그 용어로 쓰고, 나머지는 아무 지식이 없는 제3자에게 알려 주듯 대학생 강의처럼 푼다 → `house-style.md`.
+- **색채**: AI로 쓰면 내용과 강조하는 주장이 다 비슷해진다. 이 발주처·이 과업·우리 실적 셋이 다 들어가야만 나오는 문장의 비율을 올린다.
+  고유 관찰 3 → 주장마다 우리만의 근거 → 회사명 가림 테스트 → 금지어 0 → 차별점은 범주를 달리 → `distinctiveness.md`.
 
 ## 함께 담은 스킬 (skills.tsv)
 
@@ -96,4 +105,5 @@ python-pptx(브랜드 pptx 템플릿) · python-hwpx(hwpx 플레이스홀더) ·
 - 디자인 값 정본 = 서버 `ops/ui_tokens.py`. 여기 `scripts/ui_tokens.py`는 사본이며 `server/sync_tokens.sh`로만 갱신한다.
 - 회사 팩트·실적·인증 정본 = 위키(회사 팩트 DB). 스킬은 재료 팩으로만 받고, 직접 타이핑하지 않는다.
 - 실적 ↔ 기술요소 ↔ 재활용 문구 색인 정본 = 위키 「레퍼런스 색인」(01.WIKI_AI / Company) https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9 — 실명·재무·신용등급이 있어 git에 두지 않는다(한준 2026-09-04). 재료 팩 §5·§7은 여기서 고른다.
-- 재료 팩의 목차 = `references/material-pack.md`. 서버와 스킬이 함께 지키는 계약이라 한쪽만 바꾸지 않는다.
+- 재료 팩의 목차(H2 열 개, 0~9) = `references/material-pack.md`. 서버와 스킬이 함께 지키는 계약이라 한쪽만 바꾸지 않는다.
+- 인력 데이터(성명·연령·이력) 정본 = 위키(레퍼런스 색인 §I · Members · 「용역수행 조직도 및 보유인력 총괄표」 2026-08-22 최신본). 저장소에는 서식 구조(`staffing-table.md`)만 둔다.
