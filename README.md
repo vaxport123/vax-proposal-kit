@@ -1,90 +1,145 @@
-# vax-proposal-kit — 제안서 작성 스킬셋 (개인 Claude용)
+<div align="center">
 
-공고가 「도전」으로 확정되면 서버가 **재료 팩**(정량 지표·회사 자료·RFP 추출)을 위키에 써 두고,
-직원은 자기 Claude에 이 스킬셋을 넣어 **제안 전략 → 초안 → HTML 디자인 → Figma**까지 진행한다.
+# 📦 vax-proposal-kit
 
-서버는 더 이상 최종 문서·HTML을 자동으로 만들지 않는다. **판단·작성·렌더는 사람이 Claude와
-함께 하고, 데이터·학습·추출은 서버가 맡는다.** (한준 2026-09-04 결정)
+### 공고가 「도전」이 되는 순간, 제안서 재료가 위키에 도착하고 — 사람과 Claude가 게이트를 넘으며 초안을 쓴다
 
-## 흐름
+**입찰 제안 하네스 · 서버는 재료만, 판단·문장·디자인은 사람 + 개인 Claude**
 
-```
-① [ERP]   입찰레이더에서 진행상태를 「도전」으로 바꾼다 (+ 우리담당 지정)
-② [서버]  proposal_material.py 가 30분 안에 위키 정보를 모아 「📦 제안 재료 팩」을 그 공고 페이지 밑에 쓴다 (LLM 0콜)
-③ [담당자] 이 저장소를 clone → install.sh 로 스킬 설치 → Claude에 Notion 커넥터 연결 → "R26BK… 제안 진행" 으로 시작
-④ [Claude] 재료 팩 → P1 평가표 검산 → P2 가점 게이트 → P3 레퍼런스 → 방향·전략(동의) → P4 초안+검토 3회 → P5 심사 게이트
-            → 회사 토큰으로 HTML 초안 1장 (scripts/render_html.py)
-⑤ [Figma]  Figma 커넥터로 HTML을 슬라이드 프레임으로 넣는다 (references/figma-handoff.md)
-⑥ [Figma+Claude] 세부 디자인·발표자료(ppt)는 Claude-Figma로 진행. 이때부터 Figma가 정본
-```
-(한준 2026-09-04 확정 흐름)
+[![skill](https://img.shields.io/badge/skill-vax--proposal-082567?style=for-the-badge)](skills/vax-proposal/SKILL.md)
+[![gates](https://img.shields.io/badge/gates-P1→P6_%7C_2_hard_gates-1b4fc4?style=for-the-badge)](#-게이트--느낌으로-통과하지-않는다)
+[![LLM calls on server](https://img.shields.io/badge/server_LLM_calls-0-0f7038?style=for-the-badge)](server/README.md)
+[![selftest](https://img.shields.io/badge/proposal__material_selftest-48_pass-0f7038?style=for-the-badge)](server/proposal_material.py)
+[![fonts](https://img.shields.io/badge/fonts-Freesentation_·_Paperlogy-141414?style=for-the-badge)](fonts/README.md)
+[![license](https://img.shields.io/badge/fonts_license-SIL_OFL_1.1-8f5000?style=for-the-badge)](fonts/OFL.txt)
 
-## 설치 (직원 PC)
+<br>
+
+> **"제안서는 배치 작업이 아니라 판단 작업이다."**  
+> 없는 실적을 지어내는 사고를 막으려면 사람이 중간에 검문해야 한다.  
+> 그래서 서버는 **재료**를 만들고, 초안은 **사람 곁의 Claude**가 쓴다. — 한준, 2026-09-04
+
+</div>
+
+---
+
+## ⚡ 60초 시작
 
 ```bash
 git clone https://github.com/vaxport123/vax-proposal-kit
-cd vax-proposal-kit && bash install.sh          # skills.tsv 의 스킬을 ~/.claude/skills 에 + 글꼴(Freesentation·Paperlogy)을 사용자 글꼴 폴더에 설치
-bash install.sh --list                          # 무엇이 깔리는지 미리보기
-bash install.sh --no-fonts                      # 글꼴은 빼고
-```
-글꼴은 설치 뒤 Figma·PowerPoint·브라우저를 다시 열면 보인다(`fonts/README.md`).
-설치가 끝나면 `bash doctor.sh`로 점검한다 — 스킬·글꼴·파이썬·렌더러·저장소 최신 여부를 보고, Notion·Figma 커넥터는 Claude 안에서 확인하는 방법을 알려 준다.
-
-또는 기존 `vax-wiki-gateway/skills/skills.tsv`에 이 저장소를 `git` 한 줄로 등록하면
-직원은 늘 쓰던 `install.sh`로 함께 받는다.
-
-`marketplace` 항목(fluent-korean · humanize-korean · claw-hwp)은 스크립트가 못 깐다 —
-출력되는 `/plugin` 명령을 Claude Code에서 1회 실행한다.
-
-## 저장소 구성
-
-```
-skills.tsv                    설치 매니페스트 (우리 스킬 + 승인 외부 스킬) — 정본
-install.sh                    매니페스트를 읽어 설치 (vax-wiki-gateway 것과 같은 형식)
-skills/vax-proposal/          ★ 우리 스킬
-  SKILL.md                     절차·원칙 (Claude가 읽는 두뇌)
-  references/material-pack.md  서버 ↔ 스킬 계약: 재료 팩의 고정 목차
-  references/proposal-method.md  방향→전략→서술 방법론 (서버 bid_proposal_plan 에서 옮김)
-  references/house-style.md    디자인 토큰 요약 + 「쉬운판」 문체 + 「대학생 강의처럼」 표현 수위
-  references/distinctiveness.md ★ 색채 — AI 초안이 다 비슷해지는 문제와 규칙 7개, P4 검토 ③ 점검표
-  references/staffing-table.md 투입인력표(조직도·총괄표·파트 구성) 서식 구조 — 데이터는 위키에서
-  references/guardrails.md     공개 금지 정보·근거 없는 문장 금지·⚠️ 확인필요
-  references/figma-handoff.md  HTML → Figma 삽입·조정 절차
-  scripts/ui_tokens.py         디자인 정본 사본 (서버 ops/ui_tokens.py 에서 동기화)
-  scripts/render_html.py       마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
-server/                       서버에 둘 것 (여기서는 초안·명세만 관리, 배포는 서버에서)
-  proposal_material.py         ★ 도전 공고 → 재료 팩 (LLM 0콜 · 셀프테스트 39건 · dry-run 확인 완료)
-  sync_tokens.sh               ui_tokens.py 정본 → 스킬 사본 동기화
-templates/company-intro/      회사소개서 마스터 v3(HTML, 발표 톤·슬라이드 구조 참고) — 직원 PC에 설치되지 않음
-fonts/                        제안 슬라이드 글꼴 Freesentation·Paperlogy(각 9굵기 TTF, SIL OFL) — install.sh 가 사용자 글꼴 폴더에 자동 설치
-  install-fonts.sh / .ps1      macOS·Linux / Windows 설치기(관리자 권한 불필요)
-assets/photos/                회사 사진 81장(회사소개서 마스터에서 추출, MANIFEST.md에 사업별 캡션) — 슬라이드·발표자료용
-scripts/extract_assets.py     위 사진을 HTML에서 다시 뽑는 스크립트(손으로 고치지 않는다)
-doctor.sh                     설치 점검: 스킬·글꼴·파이썬·렌더러·저장소 최신 여부 + 커넥터 확인 방법 안내
-bids/                         (git 제외) 사업 폴더 — _STATE.md · 01_평가표 · 02_가점진단 · 03_레퍼런스매핑 · 04_제안서 · logs/
-agents/                       대표가 만든 agent.md 들 (규약은 agents/README.md)
-loops/                        대표가 만든 루프·반복 절차 (규약은 loops/README.md)
-  bid-loop/                    ★ /bid-loop 하네스 — P1~P6 게이트 · _STATE 상태 기계 · 심사 루브릭 · 야간 실행 래퍼
-                              ※ 실적·인력 색인 데이터는 이 저장소에 없다 — 위키 「레퍼런스 색인」이 정본(아래 정본 관계)
+cd vax-proposal-kit && bash install.sh     # 스킬 → ~/.claude/skills · 글꼴 → 사용자 글꼴 폴더 (관리자 권한 불필요)
+bash doctor.sh                             # 스킬·글꼴·파이썬·렌더러·저장소 점검 + 커넥터 확인 방법
 ```
 
-## 게이트 (스킬이 넘어가려면 문서로 증명해야 하는 것)
+그다음 Claude에 Notion 커넥터를 연결하고 이렇게 말한다.
+
+> **"R26BK01711646 제안 진행해줘"**
+
+재료 팩을 읽고 → 평가표를 검산하고 → 가점 게이트를 넘고 → 레퍼런스를 붙이고 → 방향을 제안해 **동의를 묻는다.** 동의 뒤에 초안을 쓴다.
+
+<details>
+<summary>설치 옵션</summary>
+
+```bash
+bash install.sh --list       # 무엇이 깔리는지 미리보기
+bash install.sh --no-fonts   # 글꼴 제외
+bash install.sh --force      # 덮어쓰기
+```
+`marketplace` 항목(fluent-korean · humanize-korean · claw-hwp)은 스크립트가 못 깐다 — 출력되는 `/plugin` 명령을 Claude Code에서 1회 실행한다.
+글꼴은 설치 뒤 Figma·PowerPoint·브라우저를 다시 열면 보인다.
+</details>
+
+---
+
+## 🔁 흐름 — ERP에서 Figma까지
+
+```mermaid
+flowchart LR
+    A["① ERP<br/>입찰레이더 진행상태 = 도전<br/>+ 우리담당 지정"] --> B["② 서버 · 30분 안<br/>📦 제안 재료 팩<br/>📄 RFP 원문(추출)<br/><b>LLM 0콜</b>"]
+    B --> C["③ 담당자<br/>clone → install.sh<br/>Notion 커넥터"]
+    C --> D["④ Claude · vax-proposal<br/>P1 검산 → P2 가점 게이트<br/>P3 레퍼런스 → 방향 동의<br/>P4 초안 + 검토 3회<br/>P5 심사 게이트 ≥ 80"]
+    D --> E["⑤ HTML 초안 1장<br/>회사 토큰 · 공개 금지 검사"]
+    E --> F["⑥ Figma<br/>발주처 CI 색 · Freesentation<br/>이때부터 Figma가 정본"]
+    style B fill:#e7f3ea,stroke:#0f7038
+    style D fill:#e7ecf7,stroke:#082567
+    style F fill:#fbefda,stroke:#8f5000
+```
+
+| 단계 | 누가 | 무엇을 | 어디에 |
+|---|---|---|---|
+| ② | 서버 `proposal_material.py` | 캐시·덤프·학습 DB·위키 색인을 열 개 절로 모은다. 판본이 같으면 다시 쓰지 않는다 | 공고 페이지의 자식 페이지 2개 |
+| ④ | 개인 Claude + `vax-proposal` | 재료 팩만 근거로 쓴다. 없는 것은 `⚠️ 확인필요`로 남긴다 | `bids/<사업명>/` (git 제외) |
+| ⑤ | `scripts/render_html.py` | 마크다운 → 회사 디자인 HTML. 서버 주소·토큰이 섞이면 렌더를 거부한다 | 로컬 |
+| ⑥ | Figma MCP | HTML을 슬라이드로. 강조색 한 자리만 발주처 CI로 바꾼다 | Figma |
+
+---
+
+## 🚧 게이트 — 느낌으로 통과하지 않는다
+
 | 게이트 | 기준 | 미달 시 |
 |---|---|---|
-| ① 가점 (P2) | 정량 실점 합계 ≤ 5.0 | 정성 비중 ≥ 70%면 사람 판단, 아니면 중단(가점미달). 회복가능 실점은 `차단사항`에 기한과 함께 |
-| ② 심사 (P5) | 심사위원 페르소나 채점 총점 ≥ 80 | 재작성 1회(상위 3건만 겨냥) → 그래도 미달이면 중단(심사미달), 사람이 판단 |
-80점은 합격선이 아니라 **착수선**이다. 게이트는 느낌으로 통과시키지 않는다.
+| **① 가점 (P2)** | 정량 실점 합계 **≤ 5.0** — 신용등급·실적 건수·지체상금 단계표는 **RFP 원문 표**로 센다 | 정성 비중 ≥ 70%면 사람 판단, 아니면 중단(가점미달). 회복가능 실점은 `차단사항`에 기한과 함께 |
+| **② 심사 (P5)** | 심사위원 페르소나 채점 **≥ 80** — 감점 사유를 먼저 전부 쓰고, 항목마다 제안서 안 근거 위치를 인용. 못 하면 0점 | 재작성 1회(상위 3건만) → 그래도 미달이면 중단(심사미달) |
 
-## 글의 두 가지 기준 (한준 2026-09-04)
-- **표현**: 꼭 필요한 전문용어만 그 용어로 쓰고, 나머지는 아무 지식이 없는 제3자에게 알려 주듯 대학생 강의처럼 푼다 → `house-style.md`.
-- **색채**: AI로 쓰면 내용과 강조하는 주장이 다 비슷해진다. 이 발주처·이 과업·우리 실적 셋이 다 들어가야만 나오는 문장의 비율을 올린다.
-  고유 관찰 3 → 주장마다 우리만의 근거 → 회사명 가림 테스트 → 금지어 0 → 차별점은 범주를 달리 → `distinctiveness.md`.
+**80점은 합격선이 아니라 착수선이다.** 통과 뒤에도 「질 수 있는 지점」은 발표자료에서 보강한다.
 
-## 함께 담은 스킬 (skills.tsv)
+---
+
+## ✍️ 글의 세 기준 (한준 2026-09-04)
+
+| 기준 | 한 줄 | 어디에 |
+|---|---|---|
+| **우리만의 강한 제안** | 이 발주처 · 이 과업 · 우리 실적 셋이 다 들어가야만 나오는 문장. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`distinctiveness.md`](skills/vax-proposal/references/distinctiveness.md) — 규칙 7개 · 점검표 |
+| **pain point는 웹에서 찾는다** | RFP에 없지만 발주처가 실제로 필요로 하는 것(로드맵·기사·지자체 계획)을 출처와 함께 적는다 | `SKILL.md` P3.5 · `03b_방향전략.md` §0 |
+| **대학생 강의처럼, 발표하듯** | 꼭 필요한 전문용어만 그 용어로. 나머지는 풀어 쓴다. 심사장에서 소리 내 읽어 어색하면 다시 쓴다 | [`house-style.md`](skills/vax-proposal/references/house-style.md) 「대학생 강의처럼」·「발표 낭독 검사」 |
+
+---
+
+## 🧪 실전 기록
+
+| 날짜 | 공고 | 결과 |
+|---|---|---|
+| 2026-09-04 | **순천캠퍼스 VR** (R26BK01711646) | P0~P4 완주. 재료 팩 7초·17,000자, RFP 원문 33,465자 자식 페이지. P1 검산 100점 일치 · P2 실점 2~4 통과 · P3 매칭 12건 · 웹 조사 6건으로 컨셉 도출 · 초안 v1→v4(검토 3회). 이 과정에서 스크립트 결함 4건(배점 단위·기술:가격 어순·원문 미첨부·설치 스크립트 변수)을 잡아 고쳤다 |
+
+---
+
+## 🗂️ 저장소 지도
+
+```
+skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 복사하는 유일한 폴더)
+  SKILL.md                        절차 P0~P6 · 원칙 7 (Claude가 읽는 두뇌)
+  references/
+    material-pack.md              서버 ↔ 스킬 계약 — 재료 팩 열 개 절 + RFP 원문 자식 페이지
+    proposal-method.md            돈 → 안 할 것 → 할 것 → 강점 → 전략 → 서술
+    distinctiveness.md          ★ 색채 — AI 초안이 비슷해지는 문제, 규칙 7, 검토 ③ 점검표
+    house-style.md                디자인 토큰 · 「쉬운판」 · 「대학생 강의처럼」 · 발표 낭독 검사
+    review-rubric.md              P5 심사 — 페르소나 고정 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
+    staffing-table.md             투입인력표 서식 구조 (데이터는 위키에만)
+    figma-handoff.md            ★ 실측 3덱 슬라이드 문법 — 발주처 CI 강조색 · Freesentation · 유형 10종
+    guardrails.md                 공개 금지 정보 · 근거 없는 문장 금지 · ⚠️ 확인필요 표기
+  scripts/
+    render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
+    ui_tokens.py                  디자인 정본 사본 (서버 ops/ui_tokens.py ← sync_tokens.sh)
+
+server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)
+  proposal_material.py          ★ 도전 공고 → 📦 재료 팩 + 📄 RFP 원문 · LLM 0콜 · 셀프테스트 48건
+  systemd/                        vax-proposal-material.timer / .service 사본
+loops/bid-loop/                 ★ /bid-loop 하네스 — _STATE 상태 기계 · 루브릭 · 야간 실행 래퍼
+fonts/                          Freesentation · Paperlogy 각 9굵기 TTF (SIL OFL) + 설치기
+assets/photos/                  회사 사진 81장 (회사소개서 마스터에서 추출, MANIFEST.md)
+templates/company-intro/        회사소개서 마스터 v3 HTML (발표 톤 참고)
+skills.tsv                      설치 매니페스트 — 승인 스킬의 정본
+install.sh · doctor.sh          설치 · 점검
+bids/                           (git 제외) 사업 폴더 — _STATE.md · 01~04 산출물 · logs/
+```
+
+---
+
+## 🧩 함께 담은 스킬 (`skills.tsv`)
 
 | 역할 | 스킬 | 출처 | 방식 |
 |---|---|---|---|
-| 제안 상류 (이 저장소) | `vax-proposal` | 이 저장소 | git |
+| 제안 상류 | `vax-proposal` | 이 저장소 | git |
 | 한국어 문체 | `fluent-korean` | snflkd/fluent-korean (MIT) | marketplace |
 | AI 티 윤문 | `humanize-korean` | epoko77-ai/im-not-ai (MIT) | marketplace |
 | 영어 패턴 윤문 | `humanizer` | blader/humanizer | npx |
@@ -96,23 +151,39 @@ loops/                        대표가 만든 루프·반복 절차 (규약은 
 | Figma 삽입·편집 | Figma MCP | Figma 공식 커넥터 | builtin |
 | 제안 하류 (완성 서식) | `vax-exit-kit` | vax-wiki-gateway | git |
 
-**외부 스킬은 Tools DB(01.WIKI_AI) 보안 검토를 거쳐 「사용중」이 된 것만 넣는다.** 후보·보류는 넣지 않는다
-(OpenClaw류 재발 방지 — vax-wiki-gateway 규칙 그대로).
+외부 스킬은 Tools DB(01.WIKI_AI) 보안 검토를 거쳐 「사용중」이 된 것만 넣는다. 후보·보류는 넣지 않는다.
 
-### 검토 대기 (후보 — skills.tsv에는 아직 없음)
-| 스킬 | 출처 | 검토 의견 (2026-09-04) |
+<details>
+<summary>검토 대기 후보</summary>
+
+| 스킬 | 출처 | 의견 (2026-09-04) |
 |---|---|---|
-| `axlabs-mckinsey-pptx` | seulee26/mckinsey-pptx (MIT, AX Labs 이승필) | **P6 발표자료용으로 넣을 가치가 있다.** 슬라이드 템플릿 40종 + 요청에 맞는 템플릿을 고르고 근거를 대는 서브에이전트, 한국어 지원, python-pptx 기반, 문서상 외부 네트워크 호출 없음. 다만 ① 맥킨지 스타일이라 **회사 디자인 토큰과 다르다** — 구조·템플릿 선택에 쓰고 색·글꼴은 우리 것으로 다시 입히거나 Figma 단계에서 맞춘다. ② 플러그인 설치 후 Claude Code 재시작 필요. ③ 내장 `pptx` 스킬과 역할이 겹치므로 어느 쪽을 기본으로 할지 정한다. → Tools DB 보안 검토 후 「사용중」이 되면 `skills.tsv`에 `marketplace` 줄로 추가: `/plugin marketplace add seulee26/mckinsey-pptx` → `/plugin install axlabs-mckinsey-pptx@axlabs` |
+| `axlabs-mckinsey-pptx` | seulee26/mckinsey-pptx (MIT) | P6 발표자료용으로 가치 있음 — 템플릿 40종 + 선택 서브에이전트, 한국어 지원. 맥킨지 톤이라 색·글꼴은 우리 것으로 다시 입힌다. Tools DB 검토 뒤 `skills.tsv`에 `marketplace` 줄로 추가 |
+</details>
 
-## 함께 쓰는 오픈소스 (설치 대상 아님 · 참고)
+---
 
-python-pptx(브랜드 pptx 템플릿) · python-hwpx(hwpx 플레이스홀더) · typst(보고서·견적·공문 조판,
-`vax-wiki-gateway/templates/typst`) · MinerU(RFP PDF → 마크다운, 서버) · Pretendard · Geist(글꼴) · kiwipiepy(한국어 형태소, 서버).
+## 🧭 정본은 한 곳에
 
-## 정본 관계
+| 무엇 | 정본 | 이 저장소에는 |
+|---|---|---|
+| 디자인 값 | 서버 `ops/ui_tokens.py` | 사본 (`sync_tokens.sh`로만 갱신) |
+| 회사 팩트·실적·인증 | 위키 회사 팩트 DB · Certifications · Projects | 없음 — 재료 팩으로 받는다 |
+| 실적 ↔ 기술요소 ↔ 재활용 문구 | 위키 [레퍼런스 색인](https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9) (01.WIKI_AI / Company) | 없음 — 실명·재무·신용등급은 git에 두지 않는다 |
+| 인력 데이터(성명·이력·4대보험) | 위키 색인 §I · Members · 인력구성 최신본 | 서식 구조만 (`staffing-table.md`) |
+| 재료 팩 목차 | `references/material-pack.md` | 서버와 스킬이 함께 지키는 계약 — 한쪽만 바꾸지 않는다 |
+| 완성 디자인 | Figma | 없음 — HTML은 초안이다 |
 
-- 디자인 값 정본 = 서버 `ops/ui_tokens.py`. 여기 `scripts/ui_tokens.py`는 사본이며 `server/sync_tokens.sh`로만 갱신한다.
-- 회사 팩트·실적·인증 정본 = 위키(회사 팩트 DB). 스킬은 재료 팩으로만 받고, 직접 타이핑하지 않는다.
-- 실적 ↔ 기술요소 ↔ 재활용 문구 색인 정본 = 위키 「레퍼런스 색인」(01.WIKI_AI / Company) https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9 — 실명·재무·신용등급이 있어 git에 두지 않는다(한준 2026-09-04). 재료 팩 §5·§7은 여기서 고른다.
-- 재료 팩의 목차(H2 열 개, 0~9) = `references/material-pack.md`. 서버와 스킬이 함께 지키는 계약이라 한쪽만 바꾸지 않는다.
-- 인력 데이터(성명·연령·이력) 정본 = 위키(레퍼런스 색인 §I · Members · 「용역수행 조직도 및 보유인력 총괄표」 2026-08-22 최신본). 저장소에는 서식 구조(`staffing-table.md`)만 둔다.
+---
+
+## 📜 지키는 것
+
+- 회사명·대표·실적·인증·신용등급·숫자는 **재료 팩에서만.** 임의 입력·추정·기억 인용 금지.
+- 근거 없는 문장은 쓰지 않는다. `⚠️ 확인필요 — <무엇이 필요한지>`로 남긴다.
+- 서버 주소·포트·모델명·채널 ID·내부 경로·토큰·임직원 실명은 산출물에 넣지 않는다. 렌더러가 기계로 막고, 실명은 사람이 본다.
+- 방향(P3.5)은 사용자 동의 뒤에 전략으로 간다.
+- 사람이 Figma·노션에서 고친 값이 정답이다. 되돌려 덮어쓰지 않는다.
+
+<div align="center">
+<sub>주식회사 백스포트 · 2026 · 서버 쪽 정본은 <code>vaxport123/vax-wiki-gateway</code></sub>
+</div>
