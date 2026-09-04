@@ -34,7 +34,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VERSION = "2026-09-04-v3"
+VERSION = "2026-09-04-v4"
 NEED = "⚠️ 확인필요"
 PACK_TITLE = "📦 제안 재료 팩"
 RFP_TITLE = "📄 RFP 원문(추출)"
@@ -82,6 +82,7 @@ STOP = set(("의 및 등 을 를 이 가 은 는 에 와 과 로 으로 위한 �
             "회의록 시안 제안 제안서 시스템 설계 서비스 지원 방안 계획 수행 추진 결과 성과품 산출물 자료 내용 관련 기타 일체 "
             "이상 이하 기준 사항 경우 포함 통해 대상 활동 업무 진행 작성 반영 협의 검수 납기 기간 일정 사업자 발주기관 발주처 "
             "계약 계약상대자 상대자 공고 입찰 참가 자격 확인 확인서 소지 등록 업체 업종 코드 품명 세부 형식 파일 용량").split())
+ONDEMAND_DOCS = ("입찰참가자격등록증", "경쟁입찰참가자격등록증", "납세증명", "완납증명", "법인인감증명", "사업자등록증", "등기사항")
 DOC_WORDS = ("증명", "확인서", "등록증", "서약서", "사업자", "등기", "증", "현황", "제안서", "신고", "신용")
 
 
@@ -730,7 +731,7 @@ def sec4(p, req, certs, quals, facts, ctx):
             if hit:
                 st = prop_str(hit, "상태") or "상태 미기재"
                 rows.append((d, f"보유 — {prop_str(hit, '명칭')} ({st}{', 만료 ' + prop_str(hit, '만료일') if prop_str(hit, '만료일') else ''})"))
-                if st == "만료":
+                if st == "만료" and not any(w in prop_str(hit, "명칭") for w in ONDEMAND_DOCS):
                     ctx["gaps"].append(f"서류 「{prop_str(hit, '명칭')}」 상태 만료 — 재발급 필요")
             else:
                 rows.append((d, f"{NEED} — 인증 DB에 대응 항목 없음(온디맨드 발급 서류일 수 있음)"))
@@ -804,9 +805,12 @@ def sec5(strong, weak, facts, certs, projects, refidx, ctx, today):
                 pass
         if st == "만료" and not flag:
             flag = "⚠️ 만료"
-        if flag and kind not in ("특허", "출원"):
-            how = "제출 직전 홈택스에서 재발급(온디맨드 서류)" if ("납세" in name or "완납" in name) else "갱신 필요"
-            ctx["gaps"].append(f"인증 「{name}」 {flag} — {how}(만료일 {exp or '미상'})")
+        # 온디맨드 서류(입찰참가자격등록증·납세증명 등)는 제출 때마다 새로 발급받아 쓴다 — 위키의 만료 표시는 "그날 발급본"의 날짜일 뿐이다.
+        # 한준 2026-09-04: "입찰참가등록증 만료 안 됐다, 매일 갱신해서 쓰고 있다". 만료 경고를 내지 않고 표시만 바꾼다.
+        if any(w in name for w in ONDEMAND_DOCS):
+            flag = "재발급 서류(제출 시 발급)" if flag else flag
+        elif flag and kind not in ("특허", "출원"):
+            ctx["gaps"].append(f"인증 「{name}」 {flag} — 갱신 필요(만료일 {exp or '미상'})")
         crow.append((name, kind, prop_str(c, "기관"), st or "", exp or "", flag))
     crow.sort(key=lambda r: (r[1] != "인증", r[0]))
     o += [f"### 5-② 인증·자격·특허 (인증 전부 + 이 공고 열쇳말과 닿는 특허) — {len(crow)}건"]
@@ -1204,7 +1208,8 @@ def _fake_sources():
         for k, v in kv.items():
             pr[k] = {"type": "rich_text", "rich_text": [{"plain_text": v}]}
         return pr
-    cert_exp = row(명칭="경쟁입찰참가자격등록증", 구분="인증", 기관="조달청", 상태="만료")
+    cert_exp = row(명칭="벤처기업확인서", 구분="인증", 기관="벤처기업협회", 상태="만료")
+    cert_od = row(명칭="경쟁입찰참가자격등록증", 구분="인증", 기관="조달청", 상태="만료")
     cert_exp["만료일"] = {"type": "date", "date": {"start": "2026-08-24"}}
     cert_ok = row(명칭="직접생산증명서(자격등록증)", 구분="인증", 기관="SMPP", 상태="유효")
     pat = row(명칭="인카메라 시각효과 조명 매칭 시스템", 구분="특허", 기관="특허청")
@@ -1227,7 +1232,7 @@ def _fake_sources():
                                "deliverables": ["경쟁입찰참가자격등록증 1부", "정성제안서 1식"], "schedule": "2026-12-01"}},
         "quals": {"industry": ["1469"], "product": []},
         "facts": [row(항목="회사명", 값="주식회사 백스포트"), row(항목="본점", 값="경기도 고양시")],
-        "certs": [cert_exp, cert_ok, pat], "projects": [proj], "archive": [arch], "dump_at": "2026-09-04T15:52",
+        "certs": [cert_exp, cert_od, cert_ok, pat], "projects": [proj], "archive": [arch], "dump_at": "2026-09-04T15:52",
         "refidx": [{"title": "A. 볼류메트릭 캡처 · 무형유산 기록화", "rows": [["사업", "발주기관"], ["무형유산 볼류메트릭", "한국문화재재단"]],
                     "notes": ["재활용 문구 A — 웹VR 전시 4회 납품"]},
                    {"title": "H. AI 개발 · 데이터 가공", "rows": [["사업", "발주기관"], ["운동 코칭앱", "프로맥스"]], "notes": []},
@@ -1291,7 +1296,8 @@ def selftest():
     ok("열쇳말: 강한/약한 분리", keywords_of("조선왕릉 웹VR 콘텐츠 제작 용역", {"keywords": ["웹VR"], "tasks": [{"req": "기획 문서 데이터 납품"}]}, {})[0] == ["웹VR", "조선왕릉"])
     ok("일치 점수: 강한 것 없으면 0", match_score(["웹VR"], ["데이터"], "데이터 가공 사업") == (0, []))
     ok("조립: 업종코드 보유/미보유", "| 1469 | 보유 |" in md and "9999 | 미보유" in md)
-    ok("조립: 만료 인증이 빈칸으로", any("경쟁입찰참가자격등록증" in g and "만료" in g for g in md.split("## 8.")[1].splitlines()))
+    ok("조립: 만료 인증이 빈칸으로", any("벤처기업확인서" in g and "만료" in g for g in md.split("## 8.")[1].splitlines()))
+    ok("조립: 온디맨드 서류는 빈칸에 안 올림", not any("경쟁입찰참가자격등록증" in g for g in md.split("## 8.")[1].splitlines()) and "재발급 서류(제출 시 발급)" in md)
     ok("조립: 미기입 팩트가 빈칸으로", "회사 팩트 「대표자」 미기입" in md)
     ok("조립: 유사 실적 겹친 낱말", "무형유산 볼류메트릭 콘텐츠 제작" in md and "웹VR" in md.split("### 5-③")[1].split("###")[0])
     ok("조립: 색인 군집 A 선택·H 제외", "A. 볼류메트릭" in md and "H. AI 개발" not in md)
