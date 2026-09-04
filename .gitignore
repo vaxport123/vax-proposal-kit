@@ -1,0 +1,16 @@
+# 산출물·임시 (렌더 결과 HTML은 올리지 않는다 — md가 원본)
+*.html
+!skills/**/examples/*.html
+!loops/**/*.html
+bids/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# 절대 올리지 않는 것 — 키·주소·시크릿
+*.pem
+*.key
+.env
+.env.*
+*.secret

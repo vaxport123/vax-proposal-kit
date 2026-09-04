@@ -1,0 +1,17 @@
+# vax-proposal-kit 매니페스트 — 제안서 작성에 필요한 승인 스킬의 단일 정본(SOT)
+# vax-wiki-gateway/skills/skills.tsv 와 같은 형식이라 그쪽 install.sh 도 이 파일을 읽을 수 있다.
+# 필드는 TAB 구분: name <TAB> method <TAB> source <TAB> targets <TAB> note
+#   method: git | npx | marketplace | builtin
+#   targets: claude,codex (콤마)
+# 외부 스킬은 Tools DB(01.WIKI_AI)에서 상태=사용중 인 것만 등록한다. 후보·보류는 넣지 않는다.
+vax-proposal	git	https://github.com/vaxport123/vax-proposal-kit	claude	제안 상류: 재료 팩→방향→전략→초안→HTML 디자인→Figma (이 저장소)
+fluent-korean	marketplace	snflkd/fluent-korean	claude	자연스러운 한국어 output-style(MIT). /plugin marketplace add snflkd/fluent-korean → /plugin install fluent-korean@fluent-korean → /config 에서 output-style 선택
+humanize-korean	marketplace	epoko77-ai/im-not-ai	claude	AI 티 71패턴 윤문(MIT). /plugin marketplace add epoko77-ai/im-not-ai → /plugin install humanize-korean@im-not-ai
+humanizer	npx	blader/humanizer	claude,codex	AI-티 제거(영어패턴 기준)
+deep-research	git	https://github.com/Weizhena/Deep-Research-skills	claude,codex	제안 리서치. pip pyyaml 필요
+claw-hwp	marketplace	https://github.com/DoHyun468/claw-hwp	claude	HWP 생성·편집(GUI 마켓플레이스)
+doc-gen	builtin	anthropic-skills	claude	docx/pptx/xlsx/pdf 생성(내장)
+hwp-convert	builtin	hwp-mcp	claude	HWP 변환(내장)
+frontend-design	builtin	anthropic-plugin	claude	HTML 디자인 방향·타이포(내장 플러그인)
+figma-mcp	builtin	figma-official-mcp	claude	HTML→Figma 삽입·편집(Figma 커넥터 연결 필요)
+vax-exit-kit	git	https://github.com/vaxport123/vax-wiki-gateway	claude	제안 하류: 완성 서식(견적서·회사소개서·공문·입찰증빙) — 서버 exit_kit.py

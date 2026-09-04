@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(date:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(unzip:*)",
+      "Bash(zip:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(ssh:*)",
+      "Write(./company/**)",
+      "Edit(./company/**)"
+    ],
+    "ask": []
+  }
+}
