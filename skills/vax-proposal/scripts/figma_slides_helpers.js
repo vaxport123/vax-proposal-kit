@@ -1,7 +1,9 @@
 // figma_slides_helpers.js — Figma Slides 덱을 `use_figma` 스크립트로 만들 때 쓰는 공통 헬퍼.
 // 슬라이드 규칙(deck.md §4 헤더·쪽번호·글꼴)과 실측 요령(figma-howto.md)을 코드로 옮긴 것.
-// 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고,
+// 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고(deck.md §4),
 // 본문·결론 바 위치는 장의 내용에 따라 바꾼다(46장 덱에서 y=960 고정 결론 바가 하단 1/3 공백을 만들었다).
+// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
+// 덱의 디자인 브리프(deck.md §5)에 맞는 레이아웃 가족을 새로 짜는 쪽이 맞다(한준 2026-09-05 "디자인·레이아웃 자율").
 //
 // 쓰는 법: use_figma 스크립트 맨 앞에 이 파일 내용을 붙이고(모듈 import 없음), 아래처럼 부른다.
 //   const P = { accent: "#0068B0", ink: "#141414", soft: "#3a3a3a", mid: "#68727f", line: "#d3dae3", face: "#f4f5f7", tint: "#e6f0f7" };

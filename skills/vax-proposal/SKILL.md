@@ -77,8 +77,9 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 80점은 합격선이 아니라 **착수선**이다.
 
 ### P6 · 슬라이드 계획 → Figma
-`deck.md`를 따른다. 순서: ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬 → ③ 초안 문단 전부 배치(요약 금지) → ④ RFP 요구 ID 대응표 → `07_슬라이드계획_v1.md`
-→ ⑤ `proposal-critic`(mode deck) → ⑥ 사진 목록·발주처 CI(`images.md`) → ⑦ Figma 제작(`figma-howto.md`) → ⑧ **전 장 화면을 찍어 비판자에게 다시**(`deck.md` §6).
+`deck.md`를 따른다. 고정은 §4 여섯 가지(발주처 CI 팔레트·글꼴 가족·헤더·쪽번호·사진 출처·내부 표기 없음)뿐이고, 레이아웃·위계·도식 형태는 덱마다 Claude가 정한다(한준 2026-09-05 "디자인·레이아웃 자율").
+순서: ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬 → ③ 초안 문단 전부 배치(요약 금지) → ④ RFP 요구 ID 대응표 → ⑤ **디자인 브리프**(시각 컨셉·팔레트·글자 단계·레이아웃 가족·여백 장·헤더 좌표, `deck.md` §5) → `07_슬라이드계획_v1.md`
+→ ⑥ `proposal-critic`(mode deck) → ⑦ 사진 목록·발주처 CI(`images.md`) → ⑧ **한 장 시안**을 만들어 화면을 찍어 사용자 확인(`figma-howto.md`) → ⑨ 나머지 제작 → ⑩ **전 장 화면을 찍어 비판자에게 다시**(`deck.md` §6).
 HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md` — 회사 토큰이 자동으로 들어가고, 공개 금지 정보가 있으면 렌더가 거부된다(`guardrails.md`).
 Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행) 단위로 쪼개 진행한다. 회사 일반현황·조직·실적 장은 `../../templates/company-intro/` 마스터 v3의 구조와 「PROOF — 근거 한 줄」 표기를 참고한다.
 
@@ -101,7 +102,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행
 
 ## 파일
 - `references/writing.md` — **글**: 근거 · 방향 순서 · 색채 · 대학생 강의처럼 · 낭독 검사 · 검토 ③ 점검표
-- `references/deck.md` — **덱**: RFP 규칙 우선 · 제목 사슬 · 본문 전체 수록 · RFP 대응표 · 도식 14종 · 색·글꼴·헤더·쪽번호 · 변주 · 완성 검사
+- `references/deck.md` — **덱**: RFP 규칙 우선 · 제목 사슬 · 본문 전체 수록 · RFP 대응표 · 도식 14종 · 고정 여섯 가지 · 디자인 브리프·변주·한 장 시안 · 완성 검사
 - `references/review-rubric.md` — **채점**: P5 페르소나 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
 - `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
