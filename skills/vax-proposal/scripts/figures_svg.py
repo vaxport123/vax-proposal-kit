@@ -340,11 +340,14 @@ def fig_gantt(f, p, w):
     for i, b in enumerate(bars):
         s = max(1, int(b.get("from") or 1))
         e = min(n, max(s, int(b.get("to") or s)))
-        out.append(rect(0, y, w, rh, p["surface"] if i % 2 == 0 else p["paper"]))
-        out.append(text(12, y + 10, b.get("h"), 15, p["ink"], 600, width=lw - 20, max_lines=1)[0])
-        out.append(rect(lw + cw * (s - 1) + 2, y + 9, cw * (e - s + 1) - 4, rh - 18, p["accent"], None, 4))
-        out.append(text(w - ow + 12, y + 10, b.get("out"), 14, p["ink_soft"], width=ow - 20, max_lines=1)[0])
-        y += rh
+        # 단계 이름·산출물은 두 줄까지 — 한 줄에서 「…」로 잘리면 심사위원이 읽을 수 없다(실측 2026-09-04)
+        hl = max(len(wrap(b.get("h"), lw - 20, 15, 2)), len(wrap(b.get("out"), ow - 20, 14, 2)))
+        rh_i = rh if hl <= 1 else rh + 20
+        out.append(rect(0, y, w, rh_i, p["surface"] if i % 2 == 0 else p["paper"]))
+        out.append(text(12, y + 10, b.get("h"), 15, p["ink"], 600, width=lw - 20, max_lines=2)[0])
+        out.append(rect(lw + cw * (s - 1) + 2, y + 9, cw * (e - s + 1) - 4, rh_i - 18, p["accent"], None, 4))
+        out.append(text(w - ow + 12, y + 10, b.get("out"), 14, p["ink_soft"], width=ow - 20, max_lines=2)[0])
+        y += rh_i
     for i in range(n + 1):
         out.append(line(lw + cw * i, top + hh, lw + cw * i, y, p["line"], 1))
     n_svg, nh = _note(f, p, w, y)

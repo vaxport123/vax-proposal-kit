@@ -91,6 +91,7 @@ Figma MCP로 읽어 공통 문법을 뽑았다. **새 덱은 이 문법을 기�
 - 글꼴은 `listAvailableFontsAsync`로 「Freesentation / 7 Bold」식 스타일 이름을 확인하고 전부 `loadFontAsync`한 뒤 쓴다. 로컬에 설치돼 있으면 데스크톱 Figma가 바로 인식한다.
 - **`textAutoResize = "HEIGHT"`를 준 텍스트의 `height`는 스크립트 안에서 갱신되지 않는다(10으로 읽힘).** 제목 아래 부제 위치를 `title.height`로 잡으면 겹친다. 글자 수로 줄 수를 추정해 좌표를 계산한다(한글 1em·영문 0.56em·공백 0.28em 기준, 제목 46px·폭 1728이면 한 줄에 약 37자).
 - 슬라이드 뼈대 함수 하나(`chrome`: 브레드크럼·시그니처·제목·부제·쪽번호)와 `card`·`table`·`bar`(결론 바)·`part`(PART 구분) 헬퍼로 실측 문법을 그대로 재현할 수 있다. 큰 숫자는 카드 폭 290에 56px이면 6자부터 줄바꿈된다 → 44px.
+  **이 헬퍼들은 `scripts/figma_slides_helpers.js`에 코드로 고정해 두었다**(`loadFonts`·`chrome`·`bar`·`part`·`toc`(쪽번호 없음)·`logoBox`·`photoBox`·`placeSvg`(createNodeFromSvg)·`body`·`leftovers`). `use_figma` 스크립트 맨 앞에 붙여 쓴다. 좌표 상수(여백 96·제목 y150·본문 y300·결론 바 y960·쪽번호 y1040)를 밖에서 새로 만들지 않는다.
 - 발주처 시그니처는 텍스트 자리표시가 아니라 **빈 사각형을 만들고 `upload_assets(nodeIds, scaleMode FIT)`로 PNG를 채운다.** URL 17개를 받아 `curl -F file=@…`로 한 번에 올리면 끝난다.
 - 내부 표기(「근거: 재료 팩 §…」·`⚠️ 확인필요`)가 덱에 남지 않았는지 마지막에 텍스트 검색으로 확인한다. 확인필요는 발표자 노트로 옮긴다.
 - **도식·표는 텍스트 노드로 손으로 짜지 않고 SVG로 넣는다**: `python3 scripts/figures_svg.py 04_제안서_vN.md --out-dir figs/ --accent "#0068B0"` → 파일마다 `figma.createNodeFromSvg(svg)`를 슬라이드에 `appendChild`하고 `resize`로 본문 폭(1728)에 맞춘다. 편집 가능한 도형·텍스트 노드가 되고, 초안 JSON을 고치면 다시 뽑아 교체한다(`figures.md`).

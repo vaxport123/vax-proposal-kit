@@ -148,6 +148,7 @@ python3 scripts/render_html.py 04_제안서_v4.md 06_제안서.html "제안서 �
 - `references/house-style.md`(디자인 토큰 · 「쉬운판」 · 「대학생 강의처럼」) · `references/guardrails.md` · `references/figma-handoff.md`
 - `references/slide-rules.md` — RFP 작성 규칙 우선 · 장수 산정 · 제목 사슬 · 본문 전체 수록 · 헤더/쪽번호 · RFP 요구 ID 대응표
 - `references/figures.md` — 글 대신 SVG 도식·표(```fig 블록 14종 · `scripts/figures_svg.py` · Figma `createNodeFromSvg`)
+- `scripts/figma_slides_helpers.js` — Figma Slides 생성 헬퍼(헤더·제목·결론 바·PART·목차·SVG 삽입·사진 자리·잔존 검사). `use_figma` 스크립트 앞에 붙인다
 - `references/images.md` — 웹 이미지 확보 절차와 사용권 판단(`scripts/img_fetch.py` · `img/MANIFEST.md`)
 - `../../agents/proposal-critic.md` — 비판자 에이전트(한글 표현 A1~A8 · AI 디자인 B1~B9). `install.sh`가 `~/.claude/agents/`에 복사한다
 - `../../templates/company-intro/` — 회사소개서 마스터 v3(발표 톤·슬라이드 구조 참고)
