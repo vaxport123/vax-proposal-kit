@@ -34,7 +34,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VERSION = "2026-09-04-v4"
+VERSION = "2026-09-04-v5"
 NEED = "⚠️ 확인필요"
 PACK_TITLE = "📦 제안 재료 팩"
 RFP_TITLE = "📄 RFP 원문(추출)"
@@ -432,6 +432,8 @@ def _plain(rt):
 def find_pack(parent_id, title_prefix=PACK_TITLE, kids=None):
     """공고 페이지 밑의 자식 페이지(제목 접두 일치) → (page_id, 판본 도장) | (None, "")."""
     for b in (kids if kids is not None else children(parent_id)):
+        if b.get("archived") or b.get("in_trash"):
+            continue  # 보관된 옛 팩은 없는 것으로 본다(다시 보관하려 하면 400 — 2026-09-04 실측)
         if b.get("type") == "child_page" and (b["child_page"].get("title") or "").startswith(title_prefix):
             stamp = ""
             for c in children(b["id"])[:3]:
@@ -487,7 +489,10 @@ def write_pack(parent_id, title, md, old_id=None):
     for batch in bs[1:]:
         B.notion_patch(f"https://api.notion.com/v1/blocks/{pid}/children", {"children": batch})
     if old_id:
-        B.notion_patch(f"https://api.notion.com/v1/pages/{old_id}", {"archived": True})
+        try:
+            B.notion_patch(f"https://api.notion.com/v1/pages/{old_id}", {"archived": True})
+        except Exception as e:  # noqa: BLE001 — 이미 보관된 페이지면 400. 새 팩은 이미 썼으니 경고만
+            print(f"  [warn] 옛 팩 보관 처리 실패({str(e)[:60]}) — 새 팩은 정상")
     return pid, pg.get("url", "")
 
 
