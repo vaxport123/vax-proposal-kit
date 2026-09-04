@@ -68,7 +68,9 @@ install_git(){ # $1=name $2=source
 install_npx(){ # $1=name $2=source
   command -v npx >/dev/null 2>&1 || { log "⚠ npx 없음 — Node 설치 후 재시도"; return 1; }
   log "npx skills add $2"
-  npx -y skills add "$2" >/dev/null 2>&1 && log "✓ 설치: $1" || log "⚠ 실패 — 수동: npx skills add $2"
+  # npx skills add 는 **현재 폴더**의 .claude/skills·.agents/skills 에 떨군다. 저장소 안에서 돌리면 저장소가 오염된다
+  # (2026-09-04 실측 — humanizer 가 저장소에 커밋될 뻔했다). 홈에서 돌려 ~/.claude/skills 에 들어가게 한다.
+  ( cd "$HOME" && npx -y skills add "$2" >/dev/null 2>&1 ) && log "✓ 설치: $1 → ~/.claude/skills" || log "⚠ 실패 — 수동: cd ~ && npx skills add $2"
 }
 
 install_marketplace(){ # $1=name $2=source $3=note

@@ -16,3 +16,8 @@ Thumbs.db
 .env
 .env.*
 *.secret
+
+# npx skills add 가 현재 폴더에 떨구는 것 — install.sh 는 $HOME 에서 돌리지만 실수 방지
+.agents/
+.claude/
+skills-lock.json
