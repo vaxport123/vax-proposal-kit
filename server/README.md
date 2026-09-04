@@ -53,5 +53,8 @@
 ## 배포 순서 (서버에서, 사람이 — 한 단계씩 승인)
 1. `proposal_material.py`를 pipeline 폴더에 두고 `--selftest` → `--no <공고> --out /tmp/…`로 출력 확인. ✅ 2026-09-04 pipeline 폴더에 배치, 셀프테스트 39건 통과
 2. `--commit`으로 위키에 **한 건** 써 보고 `vax-proposal` 스킬로 읽어 본다(왕복 검증). ✅ 2026-09-04 R26BK01695067 → 공고 페이지 자식 「📦 제안 재료 팩 — R26BK01695067」 생성, Notion MCP로 열 개 절 읽기 확인, 같은 판본 재실행은 `[skip]`
-3. `vax-proposal-material.timer` 활성 → 그다음 `vax-proposal-sweep.timer` 비활성. 순서를 바꾸지 않는다 — 재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다. ← **다음 단계, 승인 대기**
-4. `vax-bid-task` 조건을 「재료 팩 존재」로 바꾼다(별도 결정).
+3. `vax-proposal-material.timer` 활성 → 그다음 `vax-proposal-sweep.timer` 비활성. ✅ 2026-09-04 17:00 한준 승인으로 실행. 유닛 사본은 `server/systemd/`.
+   즉시 1회 실행에서 도전 4건 중 3건 새로 씀(R26BK01713237 · R26BK01711646 · R26BK01687425), 1건은 같은 판본이라 skip. 30초 · LLM 0회.
+   sweep 타이머는 `disable --now`(파일은 남김 — `systemctl enable --now vax-proposal-sweep.timer`로 되돌릴 수 있다).
+   ⚠️ 유닛은 서버에 직접 썼다. 서버 저장소(vax-wiki-gateway `systemd/`·`pipeline/`)에는 아직 없으니, 그쪽 deploy.sh 배포 체계에 넣는 작업이 남아 있다(deploy.sh는 있는 파일만 덮어쓰므로 지금 유닛이 지워지지는 않는다).
+4. `vax-bid-task` 조건을 「재료 팩 존재」로 바꾼다(별도 결정). ← **다음 단계, 승인 대기**

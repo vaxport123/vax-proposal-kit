@@ -1,0 +1,10 @@
+[Unit]
+Description=VAX 제안 재료 팩 생성 주기 (업무시간 30분마다 — 옛 vax-proposal-sweep.timer 자리)
+
+[Timer]
+OnCalendar=*-*-* 08..21:0/30:00
+RandomizedDelaySec=60
+Persistent=false
+
+[Install]
+WantedBy=timers.target

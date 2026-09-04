@@ -1,0 +1,16 @@
+[Unit]
+# 한준 2026-09-04: 도전 공고의 초안 자동 생성(proposal_sweep)을 멈추고, 그 자리에 「📦 제안 재료 팩」만 쓴다.
+# LLM 호출 0회 — 캐시·덤프·학습 DB·위키 색인을 material-pack.md 계약대로 모아 공고 페이지 밑에 자식 페이지로 쓴다.
+# 같은 판본이 이미 있으면 건너뛴다. 명세: vaxport123/vax-proposal-kit server/README.md
+Description=VAX 도전 공고 → 📦 제안 재료 팩 위키 기록 (proposal_material --commit)
+After=network-online.target
+OnFailure=notify-failure@%n.service
+
+[Service]
+Type=oneshot
+User=vaxgate
+Group=vaxgate
+WorkingDirectory=/opt/vax/pipeline/vax-inbox-pipeline
+ExecStart=/opt/vax/pipeline/vax-inbox-pipeline/venv/bin/python /opt/vax/pipeline/vax-inbox-pipeline/proposal_material.py --commit
+TimeoutStartSec=900
+Nice=10
