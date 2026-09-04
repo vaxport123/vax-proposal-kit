@@ -4,12 +4,18 @@
 틀린 것이 발견되면 고친다. 여기 적힌 좌표·크기는 **기본값**이다. 장의 내용에 따라 바꿔도 된다. 전 장 같아야 하는 것은 헤더와 쪽번호만(`deck.md` §4).
 
 ## 전제
-- Figma 공식 MCP 커넥터. 부르기 전에 `/figma-use` 스킬(또는 `skill://figma/figma-use/SKILL.md`)을 읽는다.
+- Figma 공식 MCP 커넥터. 부르기 전에 **공식 스킬 셋을 읽는다**: `figma-use`(기본) + **`figma-use-slides`(Slides 전용 — 이걸 안 읽어 어제 겪은 문제의 절반이 거기 답이 있었다)** + 새 파일이면 `figma-create-new-file`.
+  MCP 자원 주소: `skill://figma/figma-use-slides/SKILL.md` · `references/slide-gotchas.md`(좌표 어긋남·검증 스크립트) · `references/slide-design.md`(안티패턴). `use_figma` 호출 때 `skillNames`에 `resource:figma-use-slides`를 넣는다.
+- 공식 스킬의 두 단계 워크플로를 그대로 따른다: **1단계 계획**(우리 `07_슬라이드계획` + 디자인 브리프가 그것이다 · 좌표 계산은 하지 않는다 · 레이아웃 반복 검사) → **2단계 제작**(3~5장씩 한 호출 · 배치마다 `validate()` · 화면은 첫 배치와 마지막 배치만).
+- `generate_deck` 도구가 보여도 쓰지 않는다. 템플릿 고정이라 발주처 CI·브리프를 못 따르고, 뒤에 고칠 수 없다.
+- **헤드리스(`claude -p` · bid-loop)에서는 Figma MCP가 붙지 않는다.** P6-시안부터는 사람이 앉은 세션(데스크톱 Claude 또는 Claude Code 대화형)에서 한다.
 - HTML 초안은 초안이다. Figma에 들어간 뒤로는 Figma가 정본이고, HTML을 다시 렌더해 덮어쓰지 않는다. Figma에서 문장을 고치면 노션 초안에도 같은 수정을 남긴다.
 - Slides 파일은 `get_metadata`가 안 된다. `use_figma` 읽기 스크립트(`findAllWithCriteria({types:['SLIDE']})`)로 구조를, `get_screenshot`(슬라이드 node-id)으로 화면을 본다.
 - 팀 라이브러리가 있으면 `get_libraries`로 확인해 그 컴포넌트를 우선 쓴다. 회사 토큰 변수가 Figma에 없으면 만들지 말고 알린다.
 
 ## 만들기
+- **`appendChild`를 먼저, `x`·`y`는 그 뒤에** — 모든 노드, 모든 깊이에서. 순서를 바꾸면 노드가 (−240, −240) 어긋나고, 간헐적이라 한 번 잘 됐다고 안전하지 않다. 헬퍼의 프리미티브는 이 순서를 지킨다. 어긋난 노드를 240 더해 보정하지 말고 순서를 고친다.
+- 새 Slides 파일은 기본 밝은 테마가 깔린다. 그 테마 색·글자 스타일에 끌려가지 말고 브리프 값으로 덮어쓴다.
 - 새 파일 `create_new_file(editorType: slides)` → PART마다 `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스).
   빈 슬라이드를 먼저 전부 만들고 이름·id 표를 받아 둔다. 같은 스크립트 안의 `getSlideGrid()`는 갱신 전 값을 준다.
 - 행(장)별 스크립트를 병렬로 보내도 된다(5개 동시까지 안전했다). 중간에 죽으면 그 슬라이드에 부분 생성물이 남는다 → 다시 돌리기 전에 자식을 지운다.
@@ -34,8 +40,10 @@
 - 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
 
 ## 마무리
+- 행(장)을 만들 때마다 헬퍼 `validate(slideIds)`를 돌린다(공식 스킬의 배치 검증을 옮긴 것 + 본문 18px 하한 + 빈 면적 추정). `clean`이면 화면을 안 찍고 다음 행. 아니면 그 장만 찍어 고친다.
 - `slide.speakerNotes`(마크다운 불릿)에 요점과 ⚠️ 확인필요를 넣는다. 본문에는 내부 표기를 남기지 않는다(`leftovers()`로 검색).
-- 검사 스크립트: 형제 겹침(사진·덮개·시그니처·바 배경은 제외) · 경계 이탈 · 내부 표기 잔존 · 쪽번호 유무를 한 번에 돌린다.
+- 기존 덱을 고칠 때는 장을 지우고 다시 만들지 않는다. 그 자리에서 고친다(사용자가 「처음부터」라고 한 때만 삭제).
+- **pptx 제출이 요구되면** Figma 내보내기(pdf)나 `doc-gen`(pptx) 경로를 쓰되, Freesentation은 오피스 기본 글꼴이 아니라 받는 쪽 PC에서 깨진다. pptx는 글꼴을 심거나 pdf로 낸다. hwp는 `claw-hwp`.
 - 그다음 `deck.md` §6대로 전 장 화면을 찍어 `bids/<사업>/shots/`에 받고 비판자에 넘긴다. 내보내기는 pdf면 Figma에서, hwp·pptx면 하류 스킬(`vax-exit-kit` · `doc-gen` · `claw-hwp`).
 
 ## 참고 덱

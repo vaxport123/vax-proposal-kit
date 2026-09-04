@@ -13,5 +13,9 @@ claw-hwp	marketplace	https://github.com/DoHyun468/claw-hwp	claude	HWP 생성·�
 doc-gen	builtin	anthropic-skills	claude	docx/pptx/xlsx/pdf 생성(내장)
 hwp-convert	builtin	hwp-mcp	claude	HWP 변환(내장)
 frontend-design	builtin	anthropic-plugin	claude	HTML 디자인 방향·타이포(내장 플러그인)
-figma-mcp	builtin	figma-official-mcp	claude	HTML→Figma 삽입·편집(Figma 커넥터 연결 필요)
+figma-mcp	builtin	figma-official-mcp	claude	Figma Slides 제작·편집(커넥터 연결 필요). 공식 스킬 figma-use + figma-use-slides + figma-create-new-file 을 use_figma 전에 읽는다
+# 아래는 2026-09-05 리뷰에서 고른 후보 — Tools DB(01.WIKI_AI) 보안 검토 뒤 앞의 #을 지운다
+#yoonmoon	marketplace	amondnet/yoonmoon	claude	AI 가능성 판정(detect)·맞춤법(proofread). /plugin marketplace add amondnet/yoonmoon → /plugin install yoonmoon@yoonmoon
+#openverse	mcp	neno-is-ooo/mcp-openverse	claude	CC·공공 저작물 사진 검색(출처 문구 포함). claude mcp add openverse -- npx -y mcp-openverse
+#browser-pilot	marketplace	Dev-GOM/claude-code-marketplace	claude	페인포인트 조사용 브라우저(JS 페이지·PDF)
 vax-exit-kit	git	https://github.com/vaxport123/vax-wiki-gateway	claude	제안 하류: 완성 서식(견적서·회사소개서·공문·입찰증빙) — 서버 exit_kit.py

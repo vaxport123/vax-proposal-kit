@@ -118,6 +118,7 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     images.md · figma-howto.md    절차 — 사진 출처·사용권 · Figma MCP 실측 요령
     guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
+    proposal_lint.py            ★ 초안·계획 정규식 검사 20항목(번역투·빈 수사·40자·리듬·표·출처·브리프·연속 유형·대응표) — LLM 없음
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
     figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)
     img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 헬퍼(좌표는 기본값)
@@ -126,7 +127,8 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
 server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)
   proposal_material.py          ★ 도전 공고 → 📦 재료 팩 + 📄 RFP 원문 · LLM 0콜 · 셀프테스트 48건
   systemd/                        vax-proposal-material.timer / .service 사본
-agents/proposal-critic.md       비판자 — 한글 표현 A1~A8 · AI 디자인 B1~B9 · 완성 덱 화면(PNG) 검토
+agents/proposal-critic.md       비판자 — lint 결과를 받아 A1~A9 · B1~B9 · 완성 덱 화면(PNG) 검토
+examples/                     ★ 이름을 가린 완성 예시 한 세트(가상 발주처) — 01~07 서식 · lint 통과 상태 유지(회귀 테스트)
 loops/bid-loop/                 ★ /bid-loop 하네스 — 운행 규칙 · _STATE 상태 기계 · 야간 실행 래퍼
 fonts/                          Freesentation · Paperlogy 각 9굵기 TTF (SIL OFL) + 설치기
 assets/photos/                  회사 사진 81장 (회사소개서 마스터에서 추출, MANIFEST.md)
@@ -161,7 +163,14 @@ bids/                           (git 제외) 사업 폴더 — _STATE.md · 01~0
 
 | 스킬 | 출처 | 의견 (2026-09-04) |
 |---|---|---|
-| `axlabs-mckinsey-pptx` | seulee26/mckinsey-pptx (MIT) | P6 발표자료용으로 가치 있음 — 템플릿 40종 + 선택 서브에이전트, 한국어 지원. 맥킨지 톤이라 색·글꼴은 우리 것으로 다시 입힌다. Tools DB 검토 뒤 `skills.tsv`에 `marketplace` 줄로 추가 |
+| **Figma 공식 `figma-use-slides`** | Figma MCP 커넥터 내장(설치 불필요) | **채택(2026-09-05)** — Slides 좌표 어긋남 회피·배치 검증 스크립트·안티패턴 16. `figma-howto.md` 전제에 넣었고 헬퍼 `validate()`로 옮겼다 |
+| `yoonmoon` | amondnet/yoonmoon (MIT) | `detect`(AI 가능성 판정)·`proofread`(맞춤법)가 키트에 없는 기능. 윤문은 기존 humanize-korean 하나만 쓴다. Tools DB 검토 뒤 `skills.tsv` 주석 줄을 푼다 |
+| `korean-skills` grammar-checker | daleseo/korean-skills | 국립국어원 기준 맞춤법. yoonmoon proofread와 하나만 고른다 |
+| `mcp-openverse` | neno-is-ooo/mcp-openverse | CC·공공 저작물 사진 검색, 출처 문구가 붙어 나옴. 분위기용 사진에만(발주처 시설 사진은 못 찾는다). MCP 서버라 `claude mcp add` |
+| `browser-pilot` / agent-browser | Dev-GOM 마켓플레이스 / npm | 페인포인트 조사에서 회의록·감사 PDF처럼 JS 뒤 페이지 읽기. deep-research 보완 |
+| `hwpx-plugins` · `easy-hwp` · k-skill HWP | airmang · nathankim0 · NomaDamas | hwp 제출용. claw-hwp와 비교해 하나만 |
+| `axlabs-mckinsey-pptx` | seulee26/mckinsey-pptx (MIT) | 템플릿 40종. **디자인 자율 방향과 충돌**해 보류 |
+| hanspell · Felo Slides · 2Slides | — | 제안서 본문을 외부 서버로 보낸다 → **대외비라 뺀다** |
 </details>
 
 ---

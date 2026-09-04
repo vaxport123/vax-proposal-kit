@@ -2,7 +2,8 @@
 // 슬라이드 규칙(deck.md §4 헤더·쪽번호·글꼴)과 실측 요령(figma-howto.md)을 코드로 옮긴 것.
 // 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고(deck.md §4),
 // 본문·결론 바 위치는 장의 내용에 따라 바꾼다(46장 덱에서 y=960 고정 결론 바가 하단 1/3 공백을 만들었다).
-// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
+// 모든 프리미티브는 appendChild 뒤에 x·y를 준다(Figma 공식 figma-use-slides 스킬의 「(-240,-240) 어긋남」 회피 — 순서를 바꾸지 말 것).
+// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·validate·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
 // 덱의 디자인 브리프(deck.md §5)에 맞는 레이아웃 가족을 새로 짜는 쪽이 맞다(한준 2026-09-05 "디자인·레이아웃 자율").
 //
 // 쓰는 법: use_figma 스크립트 맨 앞에 이 파일 내용을 붙이고(모듈 import 없음), 아래처럼 부른다.
@@ -130,6 +131,39 @@ function toc(slide, P, chapters) {
     text(slide, (c.sections || []).join("   ·   "), X0 + 90, y + 44, 20, F.regular, P.mid, { width: CONTENT_W - 90 });
     y += 44 + estHeight((c.sections || []).join("   ·   "), 20, CONTENT_W - 90) + 36;
   }
+}
+
+// 배치 검사(Figma 공식 figma-use-slides 스킬의 batch validation을 옮긴 것 · 2026-09-05): 형제 겹침·글자 잘림·경계 이탈을 3초에 본다.
+// 행(장)을 하나 만들 때마다 돌리고, clean이면 화면을 안 찍고 다음 행으로. 아니면 그 장만 찍어 고친다.
+// 겹침 예외: 사진 위 덮개·시그니처·결론 바 배경처럼 겹치도록 만든 것은 name에 "bg" 또는 "photo"를 넣어 두면 뺀다.
+async function validate(slideIds, opts = {}) {
+  const OVERLAP = opts.overlap || 4, OVERFLOW = 1, ignore = opts.ignore || /bg|photo|signature|overlay/i;
+  const issues = [];
+  const slides = await Promise.all(slideIds.map(id => figma.getNodeByIdAsync(id)));
+  for (const slide of slides) {
+    if (!slide) continue;
+    const ch = slide.children.map(c => ({ id: c.id, name: c.name, type: c.type, x: c.x, y: c.y, w: c.width, h: c.height, n: c }));
+    for (let i = 0; i < ch.length; i++) for (let j = i + 1; j < ch.length; j++) {
+      const a = ch[i], b = ch[j];
+      if (ignore.test(a.name) || ignore.test(b.name)) continue;
+      const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+      if (ox >= OVERLAP && oy >= OVERLAP) issues.push({ slide: slide.name, type: "overlap", nodes: [a.name, b.name] });
+    }
+    for (const c of ch) {
+      if (c.type === "FRAME") for (const t of c.n.findAllWithCriteria({ types: ["TEXT"] })) {
+        const ab = t.absoluteBoundingBox, pb = c.n.absoluteBoundingBox;
+        if (ab && pb && (ab.x + ab.width > pb.x + pb.width + OVERFLOW || ab.y + ab.height > pb.y + pb.height + OVERFLOW)) issues.push({ slide: slide.name, type: "textClip", node: t.name });
+      }
+      if (c.x + c.w < -OVERLAP || c.y + c.h < -OVERLAP || c.x > W + OVERLAP || c.y > H + OVERLAP) issues.push({ slide: slide.name, type: "outOfBounds", node: c.name });
+      if (c.type === "TEXT" && typeof c.n.fontSize === "number" && c.n.fontSize < 18 && !/caption|page|crumb|src/i.test(c.name)) issues.push({ slide: slide.name, type: "smallText", node: c.name, size: c.n.fontSize });   // deck.md §4 본문 18px 하한
+    }
+    // 빈 면적: 헤더 아래(140)~쪽번호 위(1020) 본문 영역에서 자식 상자들이 덮는 비율(대략)
+    const body = { y0: 140, y1: 1020 }; let covered = 0;
+    for (const c of ch) { const y0 = Math.max(c.y, body.y0), y1 = Math.min(c.y + c.h, body.y1); if (y1 > y0) covered += (y1 - y0) * Math.min(c.w, CONTENT_W); }
+    const ratio = covered / ((body.y1 - body.y0) * CONTENT_W);
+    if (ratio < 0.66 && ch.length > 3) issues.push({ slide: slide.name, type: "emptyArea", filled: Math.round(ratio * 100) + "%" });   // deck.md §5 빈 면적 1/3 상한(추정치 — 화면으로 확인)
+  }
+  return { clean: issues.length === 0, issues };
 }
 
 // 마지막 검사: 덱 전체 텍스트에서 내부 표기가 남았는지. 남으면 이름을 돌려준다 — 사람이 발표자 노트로 옮긴다.
