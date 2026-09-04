@@ -51,7 +51,7 @@
 동기화 후 `python3 ui_tokens.py --selftest`가 통과해야 커밋한다.
 
 ## 배포 순서 (서버에서, 사람이 — 한 단계씩 승인)
-1. `proposal_material.py`를 pipeline 폴더에 두고 `--selftest` → `--no <공고> --out /tmp/…`로 출력 확인. ✅ 2026-09-04 임시 폴더에서 확인 완료(pipeline 폴더에는 아직 안 넣음)
-2. 출력이 material-pack.md 목차와 맞으면 `--commit`으로 위키에 **한 건** 써 보고 `vax-proposal` 스킬로 읽어 본다(왕복 검증). ← **다음 단계, 승인 대기**
-3. `vax-proposal-material.timer` 활성 → 그다음 `vax-proposal-sweep.timer` 비활성. 순서를 바꾸지 않는다 — 재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다.
+1. `proposal_material.py`를 pipeline 폴더에 두고 `--selftest` → `--no <공고> --out /tmp/…`로 출력 확인. ✅ 2026-09-04 pipeline 폴더에 배치, 셀프테스트 39건 통과
+2. `--commit`으로 위키에 **한 건** 써 보고 `vax-proposal` 스킬로 읽어 본다(왕복 검증). ✅ 2026-09-04 R26BK01695067 → 공고 페이지 자식 「📦 제안 재료 팩 — R26BK01695067」 생성, Notion MCP로 열 개 절 읽기 확인, 같은 판본 재실행은 `[skip]`
+3. `vax-proposal-material.timer` 활성 → 그다음 `vax-proposal-sweep.timer` 비활성. 순서를 바꾸지 않는다 — 재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다. ← **다음 단계, 승인 대기**
 4. `vax-bid-task` 조건을 「재료 팩 존재」로 바꾼다(별도 결정).
