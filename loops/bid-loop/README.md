@@ -18,7 +18,7 @@
    이 스킬셋에서는 그 값을 **재료 팩 §5**가 공급한다 — 위키가 갱신되면 재료 팩이 먼저 바뀌므로 두 곳이 어긋나지 않는다.
    `bid-loop.md`의 상수는 **참고값**으로 읽고, 판정에는 재료 팩 값을 쓴다.
 2. **레퍼런스 색인도 재료 팩에서 온다.** 원본은 `bids/_REFERENCE_INDEX.md`(실적·인력·재무 전체)를 P3가 읽었다.
-   여기서는 재료 팩 §5·§7 + `references/reference-index.template.md`(구조)를 쓴다. 데이터 원본은 `server/seed/`에 있고 직원 PC에는 깔리지 않는다.
+   여기서는 재료 팩 §5·§7 + `references/reference-index.template.md`(구조)를 쓴다. 데이터 정본은 위키 「레퍼런스 색인」(https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9)이고 git에는 두지 않는다.
 3. **초안은 마크다운이 원본.** 원본 절차는 P4를 `.docx`로 썼다. 이 스킬셋은 `04_제안서_vN.md`로 쓰고, HTML(P6)·docx(`doc-gen`)·pptx는 그것을 렌더한다.
    RFP가 docx/hwp 제출을 요구하면 마지막에 변환한다.
 

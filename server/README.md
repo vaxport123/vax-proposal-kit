@@ -14,6 +14,7 @@
 ## proposal_material.py — 재료 팩 생성기
 - 트리거: 입찰레이더 `진행상태=도전` (+ 우리담당 지정). 이미 팩이 있고 RFP 판본(ingest_stamp)이 같으면 다시 쓰지 않는다.
 - 출처(모두 이미 서버에 있는 것): RFP 읽기 캐시(`rfp_read.json`) · go/no-go 캐시(`gonogo_req.json`) · 채점 결과(bid_grade/bid_score) · 범위·리서치 캐시(`bid_scope.json`·`bid_research.json`) · 회사 팩트 DB · bid_learn 결과 · 서식 manifest.
+  §5·§7의 실적·인력·공백은 위키 「레퍼런스 색인」(https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9)을 Notion API로 읽어 이 공고의 기술요소에 맞는 군집만 고른다. 이 페이지가 정본이라 저장소에 사본을 두지 않는다.
 - 출력: `skills/vax-proposal/references/material-pack.md` 의 H2 아홉 개 목차를 **그대로** 따르는 마크다운. 전략·컨셉·서술은 넣지 않는다.
 - 쓰기 전 공개 금지 검사(서버 주소·포트·토큰·내부 경로)를 통과해야 위키에 쓴다.
 - 1차 배포는 `--dry-run`(stdout 출력)만. 위키 쓰기(`--commit`)는 사람이 결과를 보고 켠다 — 이 저장소의 「자동은 제안/dry-run, 확정은 사람」 원칙.

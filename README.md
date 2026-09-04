@@ -52,7 +52,7 @@ server/                       서버에 둘 것 (여기서는 초안·명세만 
 agents/                       대표가 만든 agent.md 들 (규약은 agents/README.md)
 loops/                        대표가 만든 루프·반복 절차 (규약은 loops/README.md)
   bid-loop/                    ★ /bid-loop 하네스 — P1~P6 게이트 · _STATE 상태 기계 · 심사 루브릭 · 야간 실행 래퍼
-server/seed/                  서버가 재료 팩을 채울 때 쓰는 seed 데이터(실명·재무 포함 — 직원 PC에 깔리지 않음)
+                              ※ 실적·인력 색인 데이터는 이 저장소에 없다 — 위키 「레퍼런스 색인」이 정본(아래 정본 관계)
 ```
 
 ## 게이트 (스킬이 넘어가려면 문서로 증명해야 하는 것)
@@ -95,4 +95,5 @@ python-pptx(브랜드 pptx 템플릿) · python-hwpx(hwpx 플레이스홀더) ·
 
 - 디자인 값 정본 = 서버 `ops/ui_tokens.py`. 여기 `scripts/ui_tokens.py`는 사본이며 `server/sync_tokens.sh`로만 갱신한다.
 - 회사 팩트·실적·인증 정본 = 위키(회사 팩트 DB). 스킬은 재료 팩으로만 받고, 직접 타이핑하지 않는다.
+- 실적 ↔ 기술요소 ↔ 재활용 문구 색인 정본 = 위키 「레퍼런스 색인」(01.WIKI_AI / Company) https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9 — 실명·재무·신용등급이 있어 git에 두지 않는다(한준 2026-09-04). 재료 팩 §5·§7은 여기서 고른다.
 - 재료 팩의 목차 = `references/material-pack.md`. 서버와 스킬이 함께 지키는 계약이라 한쪽만 바꾸지 않는다.
