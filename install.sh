@@ -108,6 +108,17 @@ if [ "$LIST_ONLY" = 1 ]; then
   exit 0
 fi
 
+# 에이전트 — agents/*.md 를 ~/.claude/agents/ 로 복사한다(비판자 proposal-critic 등). 서브에이전트는 이 폴더에서만 읽힌다.
+if [ "$HAS_CLAUDE" = 1 ] && ls "$DIR"/agents/*.md >/dev/null 2>&1; then
+  hdr "agents  (~/.claude/agents)"
+  mkdir -p "$HOME/.claude/agents"
+  for f in "$DIR"/agents/*.md; do
+    b="$(basename "$f")"; [ "$b" = "README.md" ] && continue
+    if [ -f "$HOME/.claude/agents/$b" ] && [ "$FORCE" = 0 ]; then log "· 이미 있음(스킵): $b"; continue; fi
+    cp "$f" "$HOME/.claude/agents/$b"; log "✓ 설치: ~/.claude/agents/$b"
+  done
+fi
+
 # 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/figma-handoff.md §2).
 # 사용자 계정에만 설치하므로 관리자 권한이 필요 없다. 자세한 것은 fonts/README.md.
 if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then

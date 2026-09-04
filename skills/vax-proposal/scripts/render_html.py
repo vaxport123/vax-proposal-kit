@@ -25,6 +25,7 @@ for _s in (sys.stdout, sys.stderr):
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ui_tokens  # noqa: E402  — 정본 사본. 색·간격은 여기서 온다.
+import figures_svg  # noqa: E402  — ```fig 블록 → 인라인 SVG(도식·표). 색은 토큰 변수로 그린다.
 
 # 공개 페이지에 있으면 안 되는 것 — references/guardrails.md §1 의 기계 판정판 (서버와 같은 목록)
 FORBIDDEN = (
@@ -77,6 +78,7 @@ blockquote{border-left:3px solid var(--brand);background:var(--brand-bg);padding
 color:var(--ink-soft);border-radius:0 var(--r-sm) var(--r-sm) 0}
 .todo{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:var(--r-sm);
 padding:1px 6px;font-weight:600}
+.fig{margin:18px 0}.fig svg{width:100%;height:auto;display:block}
 .foot{margin-top:52px;padding-top:16px;border-top:1px solid var(--hairline);color:var(--mid);font-size:13px}
 @media print{.wrap{padding:0}h2{page-break-after:avoid}table{page-break-inside:avoid}}
 """
@@ -118,13 +120,18 @@ def render(md):
             out.append("</table>")
             continue
         if ln.startswith("```"):
+            is_fig = ln.strip().startswith("```fig")
             i += 1
             buf = []
             while i < len(lines) and not lines[i].startswith("```"):
-                buf.append(html.escape(lines[i]))
+                buf.append(lines[i] if is_fig else html.escape(lines[i]))
                 i += 1
             i += 1
-            out.append("<pre><code>" + "\n".join(buf) + "</code></pre>")
+            if is_fig:
+                # 도식·표는 글이 아니라 SVG로(figures_svg). 깨진 JSON도 경고 상자로 나온다 — 조용히 사라지지 않는다.
+                out.append('<div class="fig">' + figures_svg.render_block("\n".join(buf)) + "</div>")
+            else:
+                out.append("<pre><code>" + "\n".join(buf) + "</code></pre>")
             continue
         if ln.startswith("#"):
             n = len(ln) - len(ln.lstrip("#"))
@@ -208,7 +215,11 @@ def selftest():
     ok("확인필요가 표시된다", 'class="todo"' in h)
     ok("hex 를 새로 적지 않는다", not re.search(r"#[0-9a-fA-F]{6}", BASE_CSS))
     ok("메타에 확인필요 건수", "확인필요 1건" in h)
-    print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과" % 8)
+    f = build("본문\n\n```fig\n{\"type\": \"flow\", \"steps\": [{\"h\": \"실측\", \"b\": \"이틀\"}]}\n```\n\n```fig\n{깨짐\n```\n", "T")
+    ok("fig 블록이 SVG로", f.count('<div class="fig"><svg') == 2 and "실측" in f)
+    ok("fig 색은 토큰 변수", "var(--brand)" in f)
+    ok("깨진 fig도 경고로 남는다", "확인필요" in f and "JSON 오류" in f)
+    print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과" % 11)
     return 1 if fails else 0
 
 
