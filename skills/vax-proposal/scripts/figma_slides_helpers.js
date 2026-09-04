@@ -1,6 +1,7 @@
 // figma_slides_helpers.js — Figma Slides 덱을 `use_figma` 스크립트로 만들 때 쓰는 공통 헬퍼.
-// 실측 3덱 문법(figma-handoff.md §3~4)과 구성 규칙(slide-rules.md §5)을 코드로 고정한 것.
-// 2026-09-04 순천캠퍼스 VR 덱(24장)을 만들며 알게 된 요령(figma-handoff.md §6)이 들어 있다.
+// 슬라이드 규칙(deck.md §4 헤더·쪽번호·글꼴)과 실측 요령(figma-howto.md)을 코드로 옮긴 것.
+// 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고,
+// 본문·결론 바 위치는 장의 내용에 따라 바꾼다(46장 덱에서 y=960 고정 결론 바가 하단 1/3 공백을 만들었다).
 //
 // 쓰는 법: use_figma 스크립트 맨 앞에 이 파일 내용을 붙이고(모듈 import 없음), 아래처럼 부른다.
 //   const P = { accent: "#0068B0", ink: "#141414", soft: "#3a3a3a", mid: "#68727f", line: "#d3dae3", face: "#f4f5f7", tint: "#e6f0f7" };
@@ -9,10 +10,10 @@
 //   const s = figma.createSlide(row, 0);
 //   chrome(s, P, { crumbChapter: "Ⅱ. 사업수행 부문", crumbSection: "3. 장비 납품", title: "장비는 제안요청서 9품목 전부 …", emph: ["9품목 전부"], sub: "…", page: "Ⅱ-13" });
 //   const fig = await placeSvg(s, svgString, 96, 300, 1728);   // figures_svg.py가 뽑은 SVG
-//   bar(s, P, "9품목 전부, 그 위에 예비 커버 5·여분 케이블 5", ["9품목 전부"]);
+//   bar(s, P, "9품목 전부, 그 위에 예비 커버 5·여분 케이블 5", ["9품목 전부"], fig.y + fig.height + 24);   // 본문 바로 아래. 없어도 된다
 //   const logo = logoBox(s, 1824 - 180, 40, 180, 48);           // 뒤에 upload_assets(nodeIds, FIT)로 시그니처 PNG 채움
 //
-// 규칙: 색은 P에 있는 것만(강조 하나 + 무채색). 글꼴은 Freesentation 한 가족. 좌표는 전 장 동일 — 여기 상수 밖에서 좌표를 새로 만들지 않는다.
+// 규칙: 색은 P에 있는 것만(강조 하나 + 무채색). 글꼴은 Freesentation 한 가족. 헤더·쪽번호 좌표만 전 장 동일.
 
 const W = 1920, H = 1080;
 const X0 = 96, X1 = 1824, CONTENT_W = 1728;            // 좌우 여백 96
@@ -24,7 +25,7 @@ function hex(h) { const n = parseInt(h.slice(1), 16); return { r: ((n >> 16) & 2
 function fill(h) { return [{ type: "SOLID", color: hex(h) }]; }
 
 async function loadFonts() {
-  // 글꼴이 없으면 대체하지 않고 멈춘다(figma-handoff §2). install.sh가 fonts/를 설치한다.
+  // 글꼴이 없으면 대체하지 않고 멈춘다(deck.md §4). install.sh가 fonts/를 설치한다.
   const avail = await figma.listAvailableFontsAsync();
   for (const style of Object.values(F)) {
     if (!avail.some(f => f.fontName.family === FONT && f.fontName.style === style)) throw new Error(`글꼴 없음: ${FONT} ${style} — bash fonts/install-fonts.sh --force 후 Figma 재시작`);
@@ -48,7 +49,7 @@ function text(parent, s, x, y, size, style, color, opts = {}) {
   if (opts.width) { t.resize(opts.width, 10); t.textAutoResize = "HEIGHT"; } else { t.textAutoResize = "WIDTH_AND_HEIGHT"; }
   if (opts.align) t.textAlignHorizontal = opts.align;
   t.x = x; t.y = y;
-  // 강조 낱말: 같은 텍스트 노드 안에서 범위 색만 바꾼다(제목 안 1~2개 · figma-handoff §1)
+  // 강조 낱말: 같은 텍스트 노드 안에서 범위 색만 바꾼다(제목 안 1~2개 · deck.md §4)
   for (const e of (opts.emph || [])) { const i = s.indexOf(e); if (i >= 0) { t.setRangeFills(i, i + e.length, fill(opts.emphColor)); if (opts.emphBold) t.setRangeFontName(i, i + e.length, { family: FONT, style: F.bold }); } }
   return t;
 }
@@ -70,10 +71,13 @@ function chrome(slide, P, o) {
   return Math.max(y, Y_BODY);
 }
 
-// 하단 결론 바 — 제목을 되풀이하지 않는 「그래서 발주처에 무엇이 좋은가」
-function bar(slide, P, s, emph = []) {
-  rect(slide, X0, Y_BAR, CONTENT_W, 60, P.tint, 6);
-  text(slide, s, X0 + 28, Y_BAR + 17, 22, F.bold, P.ink, { width: CONTENT_W - 56, emph, emphColor: P.accent });
+// 결론 바 — 있어도 되고 없어도 된다(deck.md §4). 있으면 제목을 되풀이하지 않는 「그래서 발주처에 무엇이 좋은가」를,
+// 본문 바로 아래(y = 마지막 요소 아래 + 24)에 둔다. y를 안 주면 옛 기본값(바닥 고정) — 본문이 짧은 장에서는 쓰지 않는다.
+function bar(slide, P, s, emph = [], y = Y_BAR) {
+  y = Math.min(y, Y_BAR);
+  rect(slide, X0, y, CONTENT_W, 60, P.tint, 6);
+  text(slide, s, X0 + 28, y + 17, 22, F.bold, P.ink, { width: CONTENT_W - 56, emph, emphColor: P.accent });
+  return y + 60;
 }
 
 // 시그니처·사진 자리: 빈 사각형을 만들고 id를 모아 두면, 스크립트 뒤 `upload_assets(nodeIds, scaleMode)`로 PNG를 채운다(시그니처 FIT · 사진 FILL).
@@ -84,7 +88,7 @@ function photoBox(slide, x, y, w, h, caption, P) {
   return n.id;
 }
 
-// figures_svg.py가 뽑은 SVG를 편집 가능한 노드로. 폭에 맞춰 비율 유지 축소. 반환: 배치된 프레임(높이는 .height로 읽힌다 — SVG는 갱신된다)
+// figures_svg.py가 뽑은 SVG를 편집 가능한 노드로. 폭은 본문 전폭(1728)으로만 — 좁히면 글자가 18px 아래로 내려간다(deck.md §3). 반환: 배치된 프레임(.height가 갱신된다)
 async function placeSvg(slide, svgString, x, y, width) {
   const n = figma.createNodeFromSvg(svgString);
   slide.appendChild(n);
@@ -94,7 +98,7 @@ async function placeSvg(slide, svgString, x, y, width) {
   return n;
 }
 
-// 본문 텍스트 블록(18~20px, 3~6줄). 도식 옆 오른쪽 열에 초안 문단을 그대로 놓는다(slide-rules §4 — 요약하지 않는다).
+// 본문 텍스트 블록(18~20px). 도식 위·아래에 초안 문단을 그대로 놓는다(deck.md §2 — 요약하지 않는다). 반환: 마지막 줄 아래 y.
 function body(slide, P, paragraphs, x, y, width, size = 19) {
   let yy = y;
   for (const p of paragraphs) { text(slide, p, x, yy, size, F.regular, P.soft, { width, lh: 1.5 }); yy += estHeight(p, size, width, 1.5) + 18; }

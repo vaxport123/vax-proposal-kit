@@ -58,7 +58,7 @@ def main():
             f.write("# assets/photos — 회사 사진 자산 (회사소개서 마스터 v3에서 추출)\n\n")
             f.write(f"원본: `templates/company-intro/` HTML의 IMG 객체 {len(rows)}장 · 합계 {total/1e6:.1f}MB · `scripts/extract_assets.py`로 다시 만든다(손으로 고치지 않는다).\n")
             f.write("캡션은 HTML 안에서 그 사진이 쓰인 자리의 문구다 — 어느 사업 사진인지 판별용. 제안서에 넣을 때는 재료 팩 §5 실적명과 맞춰 쓴다.\n")
-            f.write("대외 공개된 회사소개서의 사진이므로 제안서·발표자료에 쓸 수 있다. 발주처 로고·타사 사진은 여기 없다(발주처 CI는 figma-handoff.md 절차로 따로 구한다).\n\n")
+            f.write("대외 공개된 회사소개서의 사진이므로 제안서·발표자료에 쓸 수 있다. 발주처 로고·타사 사진은 여기 없다(발주처 CI는 figma-howto.md 절차로 따로 구한다).\n\n")
             f.write("| 파일 | 크기 | HTML 안 캡션(사업 힌트) |\n|---|---|---|\n")
             for key, ext, n, cap in rows:
                 f.write(f"| `{key}.{ext}` | {n/1024:.0f}KB | {cap} |\n")

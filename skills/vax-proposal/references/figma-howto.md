@@ -1,0 +1,45 @@
+# Figma MCP 실측 요령 — 덱을 만들 때 알아 두면 시간이 준다 (규칙이 아니라 메모)
+
+`deck.md`가 「무엇이어야 하는가」라면 이 파일은 「어떻게 하면 되더라」다. 2026-09-04 순천캠퍼스 VR 덱 두 개(24장·46장)를 만들며 확인한 것이고,
+틀린 것이 발견되면 고친다. 여기 적힌 좌표·크기는 **기본값**이다. 장의 내용에 따라 바꿔도 된다. 전 장 같아야 하는 것은 헤더와 쪽번호만(`deck.md` §4).
+
+## 전제
+- Figma 공식 MCP 커넥터. 부르기 전에 `/figma-use` 스킬(또는 `skill://figma/figma-use/SKILL.md`)을 읽는다.
+- HTML 초안은 초안이다. Figma에 들어간 뒤로는 Figma가 정본이고, HTML을 다시 렌더해 덮어쓰지 않는다. Figma에서 문장을 고치면 노션 초안에도 같은 수정을 남긴다.
+- Slides 파일은 `get_metadata`가 안 된다. `use_figma` 읽기 스크립트(`findAllWithCriteria({types:['SLIDE']})`)로 구조를, `get_screenshot`(슬라이드 node-id)으로 화면을 본다.
+- 팀 라이브러리가 있으면 `get_libraries`로 확인해 그 컴포넌트를 우선 쓴다. 회사 토큰 변수가 Figma에 없으면 만들지 말고 알린다.
+
+## 만들기
+- 새 파일 `create_new_file(editorType: slides)` → PART마다 `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스).
+  빈 슬라이드를 먼저 전부 만들고 이름·id 표를 받아 둔다. 같은 스크립트 안의 `getSlideGrid()`는 갱신 전 값을 준다.
+- 행(장)별 스크립트를 병렬로 보내도 된다(5개 동시까지 안전했다). 중간에 죽으면 그 슬라이드에 부분 생성물이 남는다 → 다시 돌리기 전에 자식을 지운다.
+- `scripts/figma_slides_helpers.js`를 스크립트 맨 앞에 붙인다(`loadFonts` · `chrome` · `bar` · `part` · `toc` · `logoBox` · `photoBox` · `placeSvg` · `body` · `leftovers`).
+- 글꼴은 `listAvailableFontsAsync`로 「Freesentation / 7 Bold」식 스타일 이름을 확인하고 전부 `loadFontAsync`한 뒤 쓴다. 로컬에 설치돼 있으면 데스크톱 Figma가 바로 본다.
+- `textAutoResize = "HEIGHT"` 텍스트의 `height`는 스크립트 안에서 갱신되지 않는다(10으로 읽힘). 헬퍼 `estLines`(한글 1em · 영문 0.56 · 공백 0.28)로 줄 수를
+  추정해 다음 요소의 y를 잡는다. 46px · 폭 1728이면 한 줄 약 37자.
+- 큰 숫자는 카드 폭 290에 56px이면 6자부터 줄바꿈된다 → 44px.
+
+## SVG 도식 넣기 (`figures_svg.py`)
+- `python3 scripts/figures_svg.py 04_제안서_vN.md --out-dir figs/ --accent "#발주처CI" --no-title`
+- 코드에 SVG 문자열을 붙이지 말고 `upload_assets`(count N)로 올린다: `curl -F "file=@fig.svg;filename=이름.svg;type=image/svg+xml"`.
+  페이지 루트에 파일명 그대로 FRAME(편집 가능한 벡터·텍스트)이 생긴다. 그다음 `slide.appendChild(node)` → `rescale(1728 / node.width)` → x·y.
+  30장을 한 번에 올리고 한 스크립트로 옮기면 끝난다(코드 50,000자 제한 회피).
+- SVG에서 온 TEXT 노드를 고칠 때는 `getStyledTextSegments(["fontName"])`로 글꼴을 먼저 로드한 뒤 `characters`를 바꾼다.
+- SVG는 `placeSvg`가 만든 프레임의 `.height`가 갱신된다. 그 아래에 본문·결론 바를 붙인다.
+
+## 시그니처·사진
+- 빈 사각형을 만들고 `upload_assets(nodeIds, scaleMode)`로 채운다: 시그니처 FIT(46곳 한 번에), 사진 FILL. URL마다 `curl -F file=@…` 한 번, 10분 안에.
+- 발주처 CI 구하기(5분): 기관 홈페이지 로고를 저장하고 주색 hex를 딴다. 「CI·BI 안내」 페이지가 있으면 그 값을 우선한다. 없으면 로고 주색 하나만 쓰고 보조색은 만들지 않는다.
+  로고 파일과 hex는 `bids/<사업>/ci/`에 두고 `_STATE.md`에 적는다. 예: 한국청년기업가정신재단 `#1b4fc4` · 한국자살예방협회 `#e8202a` · KITECH `#0047bb` · 국립순천대 `#0068B0`.
+- 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
+
+## 마무리
+- `slide.speakerNotes`(마크다운 불릿)에 요점과 ⚠️ 확인필요를 넣는다. 본문에는 내부 표기를 남기지 않는다(`leftovers()`로 검색).
+- 검사 스크립트: 형제 겹침(사진·덮개·시그니처·바 배경은 제외) · 경계 이탈 · 내부 표기 잔존 · 쪽번호 유무를 한 번에 돌린다.
+- 그다음 `deck.md` §6대로 전 장 화면을 찍어 `bids/<사업>/shots/`에 받고 비판자에 넘긴다. 내보내기는 pdf면 Figma에서, hwp·pptx면 하류 스킬(`vax-exit-kit` · `doc-gen` · `claw-hwp`).
+
+## 참고 덱
+- 순천캠퍼스 VR 24장(네이티브 노드 · 내용 누락) https://www.figma.com/slides/X1gbJJ0suIxbIeT75bkNzC ·
+  46장(SVG 도식 · 디자인 무너짐) https://www.figma.com/slides/8uXlvJ6fp2Z2DC1LHZL41n — 둘을 나란히 보면 `deck.md` §5가 왜 있는지 보인다.
+- 회사가 손으로 완성한 3덱(44~54장): 재도전 인식개선 https://www.figma.com/slides/BN80Dl0GVyKdoucXKPpsFg ·
+  생명지킴이 영상 https://www.figma.com/slides/rNBq9cTJOZeg7wtDiPyjmB · 공정자동화 3D https://www.figma.com/slides/tmZb7iG9WhrrkHWrT5I5kc
