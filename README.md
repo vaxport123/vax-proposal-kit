@@ -23,9 +23,11 @@
 
 ```bash
 git clone https://github.com/vaxport123/vax-proposal-kit
-cd vax-proposal-kit && bash install.sh          # skills.tsv 의 스킬을 ~/.claude/skills 에 설치
+cd vax-proposal-kit && bash install.sh          # skills.tsv 의 스킬을 ~/.claude/skills 에 + 글꼴(Freesentation·Paperlogy)을 사용자 글꼴 폴더에 설치
 bash install.sh --list                          # 무엇이 깔리는지 미리보기
+bash install.sh --no-fonts                      # 글꼴은 빼고
 ```
+글꼴은 설치 뒤 Figma·PowerPoint·브라우저를 다시 열면 보인다(`fonts/README.md`).
 
 또는 기존 `vax-wiki-gateway/skills/skills.tsv`에 이 저장소를 `git` 한 줄로 등록하면
 직원은 늘 쓰던 `install.sh`로 함께 받는다.
@@ -53,6 +55,8 @@ server/                       서버에 둘 것 (여기서는 초안·명세만 
   proposal_material.py         ★ 도전 공고 → 재료 팩 (LLM 0콜 · 셀프테스트 39건 · dry-run 확인 완료)
   sync_tokens.sh               ui_tokens.py 정본 → 스킬 사본 동기화
 templates/company-intro/      회사소개서 마스터 v3(HTML, 발표 톤·슬라이드 구조 참고) — 직원 PC에 설치되지 않음
+fonts/                        제안 슬라이드 글꼴 Freesentation·Paperlogy(각 9굵기 TTF, SIL OFL) — install.sh 가 사용자 글꼴 폴더에 자동 설치
+  install-fonts.sh / .ps1      macOS·Linux / Windows 설치기(관리자 권한 불필요)
 agents/                       대표가 만든 agent.md 들 (규약은 agents/README.md)
 loops/                        대표가 만든 루프·반복 절차 (규약은 loops/README.md)
   bid-loop/                    ★ /bid-loop 하네스 — P1~P6 게이트 · _STATE 상태 기계 · 심사 루브릭 · 야간 실행 래퍼

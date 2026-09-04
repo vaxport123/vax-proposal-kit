@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 # vax-proposal-kit 원클릭 설치 (직원 PC용)
-# 사용: bash install.sh            (승인 스킬 전체 설치)
+# 사용: bash install.sh            (승인 스킬 전체 설치 + 글꼴 Freesentation·Paperlogy 설치)
 #       bash install.sh --force    (기존 설치 덮어쓰기)
 #       bash install.sh --list     (매니페스트만 출력)
+#       bash install.sh --no-fonts (글꼴 설치 생략)
 #
 # 원리: skills.tsv(=승인 스킬의 정본)를 읽어 각 스킬을 내 에이전트 환경(~/.claude/skills,
 #       ~/.codex/skills)에 설치한다. vax-wiki-gateway/skills/install.sh 와 같은 방식이다.
 set -euo pipefail
 
-FORCE=0; LIST_ONLY=0
+FORCE=0; LIST_ONLY=0; FONTS=1
 for a in "$@"; do
   case "$a" in
     --force) FORCE=1 ;;
     --list)  LIST_ONLY=1 ;;
+    --no-fonts) FONTS=0 ;;
     *) echo "알 수 없는 옵션: $a"; exit 2 ;;
   esac
 done
@@ -96,5 +98,17 @@ while IFS=$'\t' read -r name method source TARGETS note; do
   esac
 done < "$MANIFEST"
 
-[ "$LIST_ONLY" = 1 ] && exit 0
+if [ "$LIST_ONLY" = 1 ]; then
+  printf '  %-16s %-12s %s\n' "fonts" "local" "fonts/ (Freesentation·Paperlogy 18종, SIL OFL) → 사용자 글꼴 폴더"
+  exit 0
+fi
+
+# 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/figma-handoff.md §2).
+# 사용자 계정에만 설치하므로 관리자 권한이 필요 없다. 자세한 것은 fonts/README.md.
+if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then
+  hdr "fonts  (Freesentation · Paperlogy)"
+  if [ "$FORCE" = 1 ]; then bash "$DIR/fonts/install-fonts.sh" --force || log "⚠ 글꼴 설치 실패 — 수동: bash fonts/install-fonts.sh"
+  else bash "$DIR/fonts/install-fonts.sh" || log "⚠ 글꼴 설치 실패 — 수동: bash fonts/install-fonts.sh"; fi
+fi
+
 hdr "완료. marketplace 항목은 위 ⓘ 안내대로 Claude Code 에서 1회 실행하세요."

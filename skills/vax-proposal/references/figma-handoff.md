@@ -34,6 +34,8 @@ Figma MCP로 읽어 공통 문법을 뽑았다. **새 덱은 이 문법을 기�
 ### 2. 글꼴 — Freesentation 한 가족, 굵기로만 단계를 만든다
 - 제목·라벨·표 머리 = **Freesentation 7 Bold**(전체 텍스트의 60~70%) · 본문 = **4 Regular** 또는 **5 Medium** · 브레드크럼·쪽번호 = **3 Light** · 큰 숫자·PART 번호 = **9 Black**.
 - 재도전 덱만 Noto Sans KR을 보조로 섞었다(로고 주변). 새 덱은 Freesentation 하나로 간다. Figma에 글꼴이 없으면 사용자에게 알린다(대체하지 않는다).
+- **글꼴은 저장소 `fonts/`에 들어 있고 `install.sh`가 자동 설치한다**(Freesentation·Paperlogy 각 9굵기, SIL OFL). Figma가 글꼴을 못 찾으면 `bash fonts/install-fonts.sh --force` 후 Figma 재시작.
+  **Paperlogy**는 같은 제작자의 표시용 글꼴(한글 지마켓산스 + 영문 Montserrat 계열)이다 — 표지·PART 구분·큰 숫자에 쓰고 본문은 Freesentation으로 두면 위계가 한 겹 더 생긴다. 한 덱에 두 가족을 넘기지 않는다.
 - 크기 단계(1920 기준): 브레드크럼 20~25 · **제목 문장 48~50** · 부제 20~24 · 카드 제목 25~30 · 본문 18~23 · 표 16~28 · 쪽번호 15 · 구분 슬라이드 제목 76~126 · 배경 큰 숫자 360~520 · 표지 제목 68~100.
 
 ### 3. 슬라이드 한 장의 해부 (본문 슬라이드 — 전체의 80%)
