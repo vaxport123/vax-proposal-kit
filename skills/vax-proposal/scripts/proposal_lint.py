@@ -17,6 +17,7 @@
   리듬  L5 문장 40자 초과(절 첫 문단 · 60자 초과는 어디서나) · L6 같은 길이 문장 5연속 · 「세 가지」 강박 · L7 문단마다 반복 동사
   구조  L8 문두 접속사·담화표지·되풀이 결론
   형식  L9 마크다운 표(fig 블록으로 바꿔야) · L10 출처 번호 [n]·03a 파일 · L11 공개 금지·내부 표기 · L12 fig JSON 깨짐
+  L13 내부 조어(덩이·색채 카드·걷는 점·제목 사슬·레이아웃 가족·그 셋/넷) — 화면·본문에 새면 「중」
   계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 유형 연속 3장 · P4 초안 문단 번호 빈틈 · P5 RFP 대응표 빈칸
   게이트(상)는 RFP 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 문단 열 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
 """
@@ -134,6 +135,14 @@ def lint_text(md, path=""):
         F.append({"line": line, "sev": sev, "code": code, "msg": msg, "src": _strip_md(src)[:70]})
 
     blocks = _blocks(md)
+    # L13 내부 조어 — 줄 단위(코드 블록 제외)
+    JARGON = re.compile(r"덩이|색채 카드|걷는 점|제목 사슬|레이아웃 가족|그 (셋|넷|다섯)(은|이|을|도)")
+    in_code = False
+    for ln, line in enumerate(md.split("\n"), 1):
+        if line.strip().startswith("```"): in_code = not in_code; continue
+        if in_code or line.startswith("#"): continue
+        m13 = JARGON.search(line)
+        if m13: add(ln, "중", "L13", "내부 조어 「%s」 — 발주처 앞에서 쓰는 말이 아니다(writing.md §4)" % m13.group(0), line)
     # 문단 묶기(text 줄이 연속되면 한 문단) · 절(heading) 경계
     paras, cur, cur_ln = [], [], None
     after_heading, skip_sec = False, False
@@ -415,6 +424,7 @@ def selftest():
     ok("L9 표", "L9" in codes(F))
     ok("L12 fig 깨짐", "L12" in codes(F))
     ok("L10 출처 없음", "L10" in codes(F))
+    ok("L13 내부 조어", "L13" in codes(lint_text("# a\n\n시스템 네 덩이가 다 있어야 합니다. 그 셋은 실적입니다.\n")))
     good = ("# Ⅰ. 제안개요\n\n순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다[1]. 2025년 3월에 문을 열었습니다.\n\n"
             "```fig\n{\"type\": \"stats\", \"items\": [{\"n\": \"3층\", \"label\": \"강의실\"}]}\n```\n\n## 확인필요 목록\n- 없음\n")
     G = lint_text(good)
