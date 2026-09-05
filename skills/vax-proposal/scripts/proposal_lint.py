@@ -18,8 +18,8 @@
   구조  L8 문두 접속사·담화표지·되풀이 결론
   형식  L9 마크다운 표(fig 블록으로 바꿔야) · L10 출처 번호 [n]·03a 파일 · L11 공개 금지·내부 표기 · L12 fig JSON 깨짐
   L13 내부 조어(덩이·색채 카드·걷는 점·제목 사슬·레이아웃 가족·그 셋/넷) — 화면·본문에 새면 「중」
-  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 유형 연속 3장 · P4 초안 문단 번호 빈틈 · P5 RFP 대응표 빈칸
-  게이트(상)는 RFP 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 문단 열 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
+  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 증거 유형 연속 3장 · P4 고스트 덱 표(증거 유형·증거 출처 열, 증거 빈칸) · P5 RFP 대응표 빈칸 · P7 재료 점검 절 · P8 반대 의견 대응표
+  게이트(상)는 RFP·증거 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 증거 열 없음/증거 빈칸 · P7 재료 점검 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
 """
 import argparse
 import json
@@ -321,49 +321,67 @@ def lint_plan(md, path=""):
         if len(titles) < 5:
             add(0, "중", "P2", "제목 사슬이 %d줄 — 본문 장 전부의 제목을 순서대로" % len(titles))
 
-    # P3·P4·P5 — 표
+    # P3·P4 — 고스트 덱 표(deck.md §2-6): | 장 | 쪽번호 | 액션 타이틀 | 증거 유형 | 증거 출처 | 사진 | 노트 |
     tbls = _tables(md)
     plan_tbl = None
     for ln, head, rows in tbls:
-        if _col(head, "유형", "레이아웃") is not None and _col(head, "제목", "슬라이드", "장") is not None:
+        if _col(head, "제목", "타이틀", "슬라이드") is not None and (_col(head, "증거") is not None or _col(head, "유형", "레이아웃") is not None):
             plan_tbl = (ln, head, rows)
             break
     if plan_tbl is None:
-        add(0, "상", "P3", "장별 계획 표가 없다(열: 장 · 제목 · 유형/레이아웃 · 도식 · 사진 · 초안 문단 번호)")
+        add(0, "상", "P3", "고스트 덱 표가 없다(열: 장 · 쪽번호 · 액션 타이틀 · 증거 유형 · 증거 출처 · 사진 · 노트 — deck.md §2-6)")
     else:
         ln, head, rows = plan_tbl
-        ci = _col(head, "유형", "레이아웃")
-        run, prev = 1, None
-        for r_i, r in enumerate(rows):
-            v = r[ci].strip() if ci < len(r) else ""
-            if v and v == prev:
-                run += 1
-                if run == 3:
-                    add(ln + 2 + r_i, "중", "P3", "같은 유형 「%s」 연속 3장 — 유형을 바꾸거나 여백 장을 넣는 쪽을 본다(deck.md §5 경향)" % v)
-            else:
-                run = 1
-            prev = v or prev
-        pi = _col(head, "문단")
-        if pi is None:
-            add(ln, "상", "P4", "「초안 문단 번호」 열이 없다 — 본문 전체 수록을 셀 수 없다(deck.md §2)")
+        ci = _col(head, "증거 유형")
+        if ci is None:
+            ci = _col(head, "증거")
+        if ci is None:
+            add(ln, "상", "P4", "「증거 유형」 열이 없다 — 장마다 주장 한 문장 + 증거 하나(deck.md §2-2). 문단을 배치하는 옛 서식이다")
+            ci = _col(head, "유형", "레이아웃")
         else:
-            nums = set()
-            for r in rows:
-                if pi < len(r):
-                    for a, b in re.findall(r"(\d+)(?:\s*[-~]\s*(\d+))?", r[pi]):
-                        a = int(a)
-                        b = int(b) if b else a
-                        nums.update(range(a, b + 1))
-            if nums:
-                gaps = sorted(set(range(1, max(nums) + 1)) - nums)
-                if gaps:
-                    add(ln, "중", "P4", "초안 문단 번호 빈틈: %s — 그 문단이 덱 어디에도 없다" % ",".join(map(str, gaps[:15])))
-        ti = _col(head, "제목")
+            si = _col(head, "출처")
+            if si is None:
+                add(ln, "중", "P4", "「증거 출처」 열이 없다 — 출처 없는 증거는 만들지 않는다(deck.md §2-2)")
+            ti0 = _col(head, "제목", "타이틀")
+            empty = []
+            kinds = []
+            for r_i, r in enumerate(rows):
+                t = _strip_md(r[ti0]) if ti0 is not None and ti0 < len(r) else ""
+                if re.search(r"^(PART|표지|목차|약어|참고문헌)", t) or re.search(r"(표지|목차|PART|약어|참고)", r[ci] if ci < len(r) else ""):
+                    continue
+                v = _strip_md(r[ci]).strip() if ci < len(r) else ""
+                if not v or v in ("-", "—"):
+                    empty.append(str(r_i + 1))
+                kinds.append(v)
+                if si is not None and si < len(r) and not _strip_md(r[si]).strip().strip("-—"):
+                    add(ln + 2 + r_i, "중", "P4", "증거 출처가 비었다 — 사진 파일·재료 팩 §·페인포인트 #·03b 카드 #", t)
+            if empty:
+                add(ln, "상", "P4", "증거가 없는 본문 장 %d개(표 행 %s) — 그 장은 아직 장이 아니다(deck.md §2-2)" % (len(empty), ",".join(empty[:10])))
+            tables = sum(1 for k in kinds if k.startswith("표"))
+            if kinds and tables > len(kinds) / 2:
+                add(ln, "중", "P3", "증거의 절반 넘게 표(%d/%d) — 표 몇 개를 사진·지도·연결도·큰 숫자로(deck.md §2-4)" % (tables, len(kinds)))
+        if ci is not None:
+            run, prev = 1, None
+            for r_i, r in enumerate(rows):
+                v = _strip_md(r[ci]).strip() if ci < len(r) else ""
+                if v and v == prev:
+                    run += 1
+                    if run == 3:
+                        add(ln + 2 + r_i, "중", "P3", "같은 증거 유형 「%s」 연속 3장 — 순서를 바꾸거나 다른 증거로(deck.md §2-4 경향)" % v)
+                else:
+                    run = 1
+                prev = v or prev
+        ti = _col(head, "제목", "타이틀")
         for r_i, r in enumerate(rows):
             if ti is not None and ti < len(r):
                 t = _strip_md(r[ti])
-                if t and not re.search(r"(다|요|까|니다)\s*[.?!]?\s*$", t) and not re.search(r"^(PART|표지|목차|약어|참고문헌|마무리)", t) and not re.search(r"(표지|목차|PART|구분|약어|참고)", r[ci] if ci < len(r) else ""):
+                if t and not re.search(r"(다|요|까|니다)\s*[.?!]?\s*$", t) and not re.search(r"^(PART|표지|목차|약어|참고문헌|마무리)", t) and not re.search(r"(표지|목차|PART|구분|약어|참고)", r[ci] if (ci is not None and ci < len(r)) else ""):
                     add(ln + 2 + r_i, "중", "P2", "본문 장 제목이 명사형", t)
+    # P7 재료 점검 · P8 반대 의견 대응표 (deck.md §0 · §2-5)
+    if not re.search(r"^#+.*재료 점검", md, re.M):
+        add(0, "상", "P7", "「재료 점검」 절이 없다 — 결정 한 문장·반대 셋·발주처 사진 6·우리 실물 6·숫자 5·색채 카드 8(deck.md §0). 없으면 덱을 만들지 않는다")
+    if not re.search(r"^#+.*반대 의견", md, re.M):
+        add(0, "중", "P8", "「반대 의견 대응표」가 없다 — 반대 셋이 각각 어느 장에서 답해지는지(deck.md §2-5)")
     rfp_tbl = None
     for ln, head, rows in tbls:
         if _col(head, "요구", "ID", "품목") is not None and _col(head, "슬라이드", "대응") is not None:
@@ -439,16 +457,20 @@ def selftest():
     ok("L5 첫 문단 40자", any(f["code"] == "L5" and f["sev"] == "중" for f in lint_text(longf)))
     ok("공개 금지(상)", render_html is None or any(f["code"] == "L11" and f["sev"] == "상" for f in lint_text("# a\n\n서버는 100.64.0.1 입니다.\n")))
     plan_bad = ("# 계획\n\n## 제목 사슬\n1. 사업 개요\n2. 추진 전략\n\n| 장 | 제목 | 유형 | 문단 |\n|---|---|---|---|\n| 1 | 사업 개요 | 카드 | 1 |\n| 2 | 추진 전략 | 카드 | 2 |\n| 3 | 기대 효과 | 카드 | 4 |\n")
+    plan_bad2 = ("# 계획\n\n## 재료 점검\n- 결정: x\n\n## 제목 사슬\n1. 캠퍼스는 한 층이 아니라 5분 거리입니다\n\n| 장 | 액션 타이틀 | 증거 유형 | 증거 출처 |\n|---|---|---|---|\n| 1 | 캠퍼스는 한 층이 아니라 5분 거리입니다 | | |\n| 2 | 장비는 9품목 다 맞춥니다 | 표 | 재료 팩 §3 |\n| 3 | 일정은 13주입니다 | 표 | 재료 팩 §3 |\n| 4 | 검수는 교실에서 합니다 | 표 | 03a #2 |\n")
     P = lint_plan(plan_bad)
     ok("P1 브리프 없음", "P1" in codes(P))
     ok("P2 명사형 제목", "P2" in codes(P))
-    ok("P3 연속 3장", any(f["code"] == "P3" and f["sev"] == "중" for f in P))
-    ok("P4 문단 빈틈", "P4" in codes(P))
+    ok("P3 연속 3장", any(f["code"] == "P3" and f["sev"] == "중" for f in lint_plan(plan_bad2)))
+    ok("P4 증거 열 없음(상)", any(f["code"] == "P4" and f["sev"] == "상" for f in P))
+    ok("P4 증거 빈칸(상)", any(f["code"] == "P4" and f["sev"] == "상" and "증거가 없는" in f["msg"] for f in lint_plan(plan_bad2)))
+    ok("P7 재료 점검 없음(상)", any(f["code"] == "P7" and f["sev"] == "상" for f in P))
+    ok("P8 반대 의견 없음", "P8" in codes(P))
     ok("P5 대응표 없음", "P5" in codes(P))
-    plan_good = ("# 계획\n\n## 디자인 브리프\n- 시각 컨셉: 강의실에서 골목으로 걸어 나가는 동선\n- 팔레트: #0068B0 · 진한 · 옅은\n- 글자 단계: 48/22/19/13\n"
+    plan_good = ("# 계획\n\n## 재료 점검\n- 결정: 협상 1순위\n- 반대 셋: a→3 b→4 c→2\n\n## 디자인 브리프\n- 시각 컨셉: 강의실에서 골목으로 걸어 나가는 동선\n- 팔레트: #0068B0 · 진한 · 옅은\n- 글자 단계: 48/22/19/13\n"
                  "- 레이아웃 가족: 전면 사진 / 좌 도식 / 표 전폭\n- 여백 장: Ⅰ-2 · Ⅱ-5\n- 헤더 좌표: x96 y48\n\n## 제목 사슬\n"
                  "1. 순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다\n2. 그런데 캠퍼스는 한 층이 아니라 5분 거리 전체입니다\n3. 그래서 실측 공간을 만듭니다\n4. 장비는 9품목 전부 맞춥니다\n5. 13주에 검수합니다\n\n"
-                 "| 장 | 제목 | 유형 | 도식 | 문단 |\n|---|---|---|---|---|\n| 1 | 표지 | 표지 | | |\n| 2 | 순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다 | 전면 사진 | | 1-2 |\n| 3 | 그런데 캠퍼스는 5분 거리 전체입니다 | 숫자 | stats | 3 |\n| 4 | 그래서 실측 공간을 만듭니다 | 좌 도식 | flow | 4-5 |\n\n"
+                 "| 장 | 쪽번호 | 액션 타이틀 | 증거 유형 | 증거 출처 | 사진 | 노트 |\n|---|---|---|---|---|---|---|\n| 1 | — | 표지 | 사진 | MANIFEST 1 | 외관 | — |\n| 2 | Ⅰ-1 | 순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다 | 사진 | MANIFEST 2 | 간판 | 1-2 |\n| 3 | Ⅰ-2 | 그런데 캠퍼스는 5분 거리 전체입니다 | 큰 숫자 | 03a #1 | — | 3 |\n| 4 | Ⅰ-3 | 그래서 실측 공간을 만듭니다 | 지도 | 03b 카드 2 | — | 4-5 |\n\n## 반대 의견 대응표\n| 반대 | 답하는 장 |\n|---|---|\n| a | 3 |\n\n"
                  "## RFP 요구 대응표\n| 요구 ID | 대응 슬라이드 |\n|---|---|\n| 기획-001 | 3 |\n| 기능-001 | 4 |\n")
     G = lint_plan(plan_good)
     ok("좋은 계획은 상 없음", not any(f["sev"] == "상" for f in G))

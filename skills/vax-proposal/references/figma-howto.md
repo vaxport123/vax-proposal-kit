@@ -19,7 +19,7 @@
 - 새 파일 `create_new_file(editorType: slides)` → PART마다 `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스).
   빈 슬라이드를 먼저 전부 만들고 이름·id 표를 받아 둔다. 같은 스크립트 안의 `getSlideGrid()`는 갱신 전 값을 준다.
 - 행(장)별 스크립트를 병렬로 보내도 된다(5개 동시까지 안전했다). 중간에 죽으면 그 슬라이드에 부분 생성물이 남는다 → 다시 돌리기 전에 자식을 지운다.
-- `scripts/figma_slides_helpers.js`를 스크립트 맨 앞에 붙인다(`loadFonts` · `chrome` · `bar` · `part` · `toc` · `logoBox` · `photoBox` · `placeSvg` · `body` · `notes` · `retitle` · `validate` · `leftovers`). 글자 단계 기본값은 `T`(deck.md §4 기준선) — 브리프 값이 다르면 `Object.assign(T, {...})`로 덮는다.
+- `scripts/figma_slides_helpers.js`를 스크립트 맨 앞에 붙인다(`loadFonts` · `header` · `actionTitle` · `logoBox` · `photoBox` · `placeSvg` · `notes` · `retitle` · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`). 2026-09-06에 `chrome`·`bar`·`body`·`part`·`toc`(위에서 아래로 쌓는 조합 함수)는 지웠다 — 레이아웃은 증거 유형별로 고른다(deck.md §5). 글자 단계 기본값은 `T`.
 - **Paperlogy는 로컬에 설치돼 있어도 Figma 글꼴 목록에 안 뜰 수 있다**(2026-09-05 v5 실측). 그러면 표지·PART·큰 숫자도 Freesentation 9 Black으로 간다 — 대체 글꼴을 다른 가족에서 고르지 않는다.
 - 글꼴은 `listAvailableFontsAsync`로 「Freesentation / 7 Bold」식 스타일 이름을 확인하고 전부 `loadFontAsync`한 뒤 쓴다. 로컬에 설치돼 있으면 데스크톱 Figma가 바로 본다.
 - `textAutoResize = "HEIGHT"` 텍스트의 `height`는 스크립트 안에서 갱신되지 않는다(10으로 읽힘). 헬퍼 `estLines`(한글 1em · 영문 0.56 · 공백 0.28)로 줄 수를
@@ -41,7 +41,7 @@
 - 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
 
 ## 그림 그리기 (2026-09-05 도식 10장 실측)
-- 레시피는 `scripts/figma_slides_diagrams.js`에 있다(헬퍼 다음에 붙인다): `routeMap` 동선 지도 · `systemConnect` 연결도 · `storyboard` 스토리보드 · `pictoPanels` 판 셋 · `roomPlan` 교실 배치도 · `processStrip` 공정도+사진 · `layerDiagram` 층도 · `radiusMap` 반경 지도 · `wireframeVR` 와이어프레임 · `approvalTimeline` 타임라인. 좌표·개수는 인자로 바꾼다. 표 장은 `fitTable`, 단계·카드 장은 `restackColumns`.
+- 레시피는 `scripts/figma_slides_diagrams.js`에 넷만 남겼다(헬퍼 다음에 붙인다): `routeMap` 동선 지도 · `systemConnect` 연결도 · `roomPlan` 배치도 · `approvalTimeline` 타임라인. 스토리보드·판·공정도·층도·반경 지도·와이어프레임은 지웠다 — 도형으로 그린 개념도는 증거가 아니었다(사진·렌더·수치가 증거다). 표가 증거인 장은 `fitTable`.
 - 벡터(`createVector`)는 `vectorPaths`를 넣은 뒤 **x·y를 경로 최소점으로 다시 놓는다.** 안 놓으면 (0,0)으로 튄다. 헬퍼 `arrow`·`curvePath`가 처리한다.
 - 곡선 경로는 정거장 원 **아래 층**에 둔다: `slide.insertChild(구역 띠 다음 index, path)`.
 - 텍스트 속성(정렬·글자)을 바꿀 때도 그 글꼴을 `loadFontAsync`해야 한다(안 하면 「unloaded font」).

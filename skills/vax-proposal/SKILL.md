@@ -81,14 +81,16 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 ```
 80점은 합격선이 아니라 **착수선**이다.
 
-### P6 · 슬라이드 계획 → Figma
-`deck.md`를 따른다. 고정은 §4 여섯 가지(발주처 CI 팔레트·글꼴 가족·헤더·쪽번호·사진 출처·내부 표기 없음)뿐이고, 레이아웃·위계·도식 형태는 덱마다 Claude가 정한다(한준 2026-09-05 "디자인·레이아웃 자율").
-순서: ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬 → ③ 초안 문단 전부 배치(요약 금지) → ④ RFP 요구 ID 대응표 → ⑤ **디자인 브리프**(시각 컨셉·팔레트·글자 단계·레이아웃 가족·여백 장·헤더 좌표, `deck.md` §5) → `07_슬라이드계획_v1.md`
-→ ⑥ `python3 scripts/proposal_lint.py 07_슬라이드계획_v1.md --plan`(「상」은 RFP 관련만: 제목 사슬 절·장별 표·문단 번호 열·대응표 빈칸. 브리프·연속 유형·가리키기 제목은 「중」 — 경향) → `proposal-critic`(mode deck) → ⑦ 사진 목록·발주처 CI(`images.md`)
-→ ⑧ **한 장 시안**을 만들어 화면을 찍어 사용자 확인(`figma-howto.md` — Figma 공식 `figma-use-slides` 스킬을 먼저 읽는다) → ⑨ 행 단위 제작, 행마다 `validate()` → ⑩ **전 장 화면을 찍어 비판자에게 다시**(`deck.md` §6).
-헤드리스(`claude -p`)에서는 Figma MCP가 붙지 않는다. P6-시안 이후는 사람이 앉은 세션에서 한다.
-HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md` — 회사 토큰이 자동으로 들어가고, 공개 금지 정보가 있으면 렌더가 거부된다(`guardrails.md`).
-Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행) 단위로 쪼개 진행한다. 회사 일반현황·조직·실적 장은 `../../templates/company-intro/` 마스터 v3의 구조와 「PROOF — 근거 한 줄」 표기를 참고한다.
+### P6 · 고스트 덱 → Figma
+`deck.md`를 따른다. 2026-09-06에 순서를 뒤집었다 — 문단을 슬라이드에 배치하는 방식은 지웠다(문서를 덱으로 바꾸면 문서 같은 덱이 나온다). 장 하나 = **액션 타이틀 한 문장 + 증거 하나**.
+⓪ **재료 게이트**(`deck.md` §0) → `06_재료점검.md`: 심사위원이 내릴 결정 한 문장 · 반대 셋 · 발주처 현장 사진 6 · 우리 실물 6 · 출처 있는 숫자 5 · 색채 카드 8. 빈 칸이면 **덱을 만들지 않고 재료 요청서를 낸다**(누가 무엇을 구해야 하나).
+① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬(액션 타이틀 — 발주처가 얻는 것이 문장 안에, 앞 제목을 받고, 붙여 읽어 한 글, 발표자가 입으로 말하는 문형) → ③ **고스트 덱 표**(장 · 쪽번호 · 액션 타이틀 · 증거 유형 · 증거 출처 · 사진 · 노트) → ④ RFP 요구 ID 대응표 · 반대 의견 대응표 → ⑤ 리듬 점검(PART마다 사진·큰 숫자·지도/연결도 1 이상, 표는 절반 이하) → ⑥ 디자인 브리프 → `07_슬라이드계획_v1.md`
+→ ⑦ `python3 scripts/proposal_lint.py 07_슬라이드계획_v1.md --plan`(「상」: 재료 점검 절 없음 · 증거 열 없음/증거 빈칸 · 대응표 빈칸) → `proposal-critic`(mode deck) → **사람 승인 1회**(헤드리스면 `차단사항`에 적고 종료)
+→ ⑧ 사진 받기·발주처 CI(`images.md`) → ⑨ Figma: 증거가 가장 강한 장 하나를 먼저 만들어 화면으로 확인 → 나머지. 레이아웃은 증거 유형별로 고른다(`deck.md` §5 — 컴포넌트 라이브러리는 다음 일, 그때까지 사진·큰 숫자·표 + `figma_slides_diagrams.js` 레시피 넷). 문단은 `notes()`로 발표자 노트에.
+→ ⑩ 검사는 `evidenceCheck()`(증거 없는 장·사진 없는 PART·발주처 없는 제목)부터, 그다음 `validate()`·`leftovers()`. 전 장 화면을 모음판으로 찍어 `proposal-critic`(mode deck, `shots_dir`)에.
+헤드리스(`claude -p`)에서는 Figma MCP가 붙지 않는다. ⑨ 이후는 사람이 앉은 세션에서 한다.
+HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md`(문서용 fig 도식은 여기서 그려진다 · 공개 금지 정보가 있으면 렌더 거부).
+Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직·실적 장은 `../../templates/company-intro/` 마스터 v3의 「PROOF — 근거 한 줄」 표기를 참고한다.
 
 ### 스텝 종료 시 항상 (루프형)
 `_STATE.md` 갱신(현재단계·다음행동·진행중:false·마지막갱신) → `logs/`에 1~5줄 → 사용자에게 3줄 보고 [완료한 것] [다음 스텝] [사람이 처리할 차단사항] → 종료.
@@ -109,11 +111,11 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행
 
 ## 파일
 - `references/writing.md` — **글**: 세 축 — 페인포인트(기관 웹 조사·RFP 연결) · 색채(카드 × 페인포인트 교차표 → 아이디어) · 문장(쓰는 순서·AI 티 세 층) + 방향 순서 · 점검표
-- `references/deck.md` — **덱**: RFP 규칙 우선 · 제목 사슬 · 본문 전체 수록 · RFP 대응표 · 도식 14종 · 고정 여섯 가지 · 디자인 브리프·변주·한 장 시안 · 완성 검사
+- `references/deck.md` — **덱**: 재료 게이트 · RFP 규칙 우선 · 고스트 덱(액션 타이틀 + 증거 하나 · 대응표 · 리듬) · 문서용 fig 도식 · 고정 여섯 가지 · 레이아웃은 고른다 · 증거 검사
 - `references/review-rubric.md` — **채점**: P5 페르소나 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
 - `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
-- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(Slides 프리미티브 + 그림 프리미티브 + `validate`) · `figma_slides_diagrams.js`(그림 레시피 10종 — 동선 지도·연결도·스토리보드·판·교실 배치도·공정도·층도·반경 지도·와이어프레임·타임라인 + `fitTable`·`restackColumns`) · `ui_tokens.py`(디자인 정본 사본)
+- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(프리미티브 · header/actionTitle · notes/retitle · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`) · `figma_slides_diagrams.js`(증거 레시피 넷 — 동선 지도·연결도·배치도·타임라인 + `fitTable`) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)
 - `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A9 · 디자인 B1~B10, B군은 경향 지적). `install.sh`가 `~/.claude/agents/`에 복사한다
 - `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md` · `run-loop.sh` · `settings.json`
