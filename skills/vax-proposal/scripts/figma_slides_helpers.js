@@ -81,7 +81,7 @@ function chrome(slide, P, o) {
 // 본문 바로 아래(y = 마지막 요소 아래 + 24)에 둔다. y를 안 주면 옛 기본값(바닥 고정) — 본문이 짧은 장에서는 쓰지 않는다.
 function bar(slide, P, s, emph = [], y = Y_BAR) {
   y = Math.min(y, Y_BAR);
-  rect(slide, X0, y, CONTENT_W, 64, P.tint, 6).name = "bg-bar";
+  rect(slide, X0, y, CONTENT_W, 64, P.tint, 6).name = "bg-closing";   // 간트 막대(bg-gantt)와 이름을 나눈다 — 같으면 재배치 스크립트가 막대를 끌고 간다(09-05 실측)
   text(slide, s, X0 + 28, y + 14, T.key, F.bold, P.ink, { width: CONTENT_W - 56, emph, emphColor: P.accent, name: "closing" });
   return y + 64;
 }
