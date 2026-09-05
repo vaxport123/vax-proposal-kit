@@ -3,7 +3,7 @@
 // 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고(deck.md §4),
 // 본문·결론 바 위치는 장의 내용에 따라 바꾼다(46장 덱에서 y=960 고정 결론 바가 하단 1/3 공백을 만들었다).
 // 모든 프리미티브는 appendChild 뒤에 x·y를 준다(Figma 공식 figma-use-slides 스킬의 「(-240,-240) 어긋남」 회피 — 순서를 바꾸지 말 것).
-// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·notes·retitle·validate·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
+// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·notes·retitle·validate·leftovers + 그림용 arrow·ring·curvePath·zone·headset·clearBody)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
 // 덱의 디자인 브리프(deck.md §5)에 맞는 레이아웃 가족을 새로 짜는 쪽이 맞다(한준 2026-09-05 "디자인·레이아웃 자율").
 //
 // 쓰는 법: use_figma 스크립트 맨 앞에 이 파일 내용을 붙이고(모듈 import 없음), 아래처럼 부른다.
@@ -150,6 +150,33 @@ function toc(slide, P, chapters) {
     y += 44 + estHeight((c.sections || []).join("   ·   "), 20, CONTENT_W - 90) + 36;
   }
 }
+
+// ── 그림 프리미티브(2026-09-05 v5 도식 6장에서 뽑은 것) — 표·카드가 아닌 「그림」을 그릴 때 쓴다(deck.md §3) ──
+// 화살표: 선 + 삼각 머리. dash면 점선(제어·같은 소스 같은 약한 관계). 이름 bg-arrow / bg-arrowhead → validate가 무시한다.
+function arrow(p, x1, y1, x2, y2, color, o = {}) {
+  const w = o.w || 4, v = figma.createVector(); p.appendChild(v); v.name = "bg-arrow";
+  v.vectorPaths = [{ windingRule: "NONE", data: `M ${x1} ${y1} L ${x2} ${y2}` }]; v.strokes = fill(color); v.strokeWeight = w; v.strokeCap = "ROUND"; v.fills = []; if (o.dash) v.dashPattern = [12, 10];
+  v.x = Math.min(x1, x2) - w / 2; v.y = Math.min(y1, y2) - w / 2;   // 벡터는 vectorPaths를 넣은 뒤 x·y를 최소점으로 다시 놓아야 한다(안 놓으면 원점으로 튄다)
+  const a = Math.atan2(y2 - y1, x2 - x1), L = o.head || 18, p1 = [x2 - L * Math.cos(a - 0.5), y2 - L * Math.sin(a - 0.5)], p2 = [x2 - L * Math.cos(a + 0.5), y2 - L * Math.sin(a + 0.5)];
+  const h = figma.createVector(); p.appendChild(h); h.name = "bg-arrowhead"; h.vectorPaths = [{ windingRule: "NONZERO", data: `M ${x2} ${y2} L ${p1[0]} ${p1[1]} L ${p2[0]} ${p2[1]} Z` }]; h.fills = fill(color); h.strokes = [];
+  h.x = Math.min(x2, p1[0], p2[0]); h.y = Math.min(y2, p1[1], p2[1]); return v;
+}
+// 원 테두리(반경 지도의 「걸어서 5분」 원). dash면 점선.
+function ring(p, cx, cy, r, color, w = 3, dash = false) { const e = figma.createEllipse(); p.appendChild(e); e.resize(r * 2, r * 2); e.fills = []; e.strokes = fill(color); e.strokeWeight = w; if (dash) e.dashPattern = [12, 10]; e.name = "bg-ring"; e.x = cx - r; e.y = cy - r; return e; }
+// 점들을 지나는 부드러운 곡선(동선 지도의 경로). pts = [[x,y],...]. 반환 벡터는 정거장 아래 층에 두려면 p.insertChild(index, v).
+function curvePath(p, pts, color, w = 6) {
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += ` C ${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]}`; }
+  const v = figma.createVector(); p.appendChild(v); v.name = "bg-path"; v.vectorPaths = [{ windingRule: "NONE", data: d }]; v.strokes = fill(color); v.strokeWeight = w; v.strokeCap = "ROUND"; v.strokeJoin = "ROUND"; v.fills = [];
+  const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]); const exX = (v.width - w - (Math.max(...xs) - Math.min(...xs))) / 2, exY = (v.height - w - (Math.max(...ys) - Math.min(...ys))) / 2;
+  v.x = Math.min(...xs) - w / 2 - Math.max(0, exX); v.y = Math.min(...ys) - w / 2 - Math.max(0, exY); return v;
+}
+// 구역 띠(지도·배치도의 바탕 영역). outline이면 점선 테두리만.
+function zone(p, x, y, w, h, color, label, sub, P, outline = false) { const r = rect(p, x, y, w, h, outline ? "#ffffff" : color, 16); r.name = "bg-zone"; if (outline) { r.strokes = fill(P.line); r.strokeWeight = 2; r.dashPattern = [10, 8]; } if (label) text(p, label, x + 28, y + 22, 24, F.bold, P.deep, { name: "zone-h" }); if (sub) text(p, sub, x + 28, y + 56, 20, F.regular, P.mid, { name: "zone-sub" }); return r; }
+// 헤드셋 픽토그램(기기 15대를 격자로 보이기). 사각형 둘이라 이모지·아이콘 금지 규칙에 걸리지 않는다.
+function headset(p, x, y, w, h, color) { const b = rect(p, x, y, w, h, color, h / 3); b.name = "bg-hmd"; const vz = rect(p, x + w * 0.18, y + h * 0.32, w * 0.64, h * 0.3, "#ffffff", 4); vz.name = "bg-hmd-visor"; return b; }
+// 장을 그림으로 다시 그릴 때: 헤더·제목·쪽번호·결론(·사진)만 남기고 본문을 노트로 보낸 뒤 지운다. 반환: 노트로 간 문단 수.
+function clearBody(slide, keepPhotos = false) { const keep = keepPhotos ? /^(crumb|crumb-sec|bg-rule|bg-dot|signature|bg-sig|page|title|closing|photo|caption|src)/ : /^(crumb|crumb-sec|bg-rule|bg-dot|signature|bg-sig|page|title|closing)$/; const gone = slide.children.filter(c => !keep.test(c.name)); const bodies = gone.filter(c => c.type === "TEXT" && c.fontSize >= 20 && c.characters.length > 14).map(c => c.characters); if (bodies.length) slide.speakerNotes = ((slide.speakerNotes || "") ? slide.speakerNotes + "\n" : "") + "- (화면에서 노트로) " + bodies.join("\n- "); for (const c of gone) c.remove(); return bodies.length; }
 
 // 배치 검사(Figma 공식 figma-use-slides 스킬의 batch validation을 옮긴 것 · 2026-09-05): 형제 겹침·글자 잘림·경계 이탈을 3초에 본다.
 // 행(장)을 하나 만들 때마다 돌리고, clean이면 화면을 안 찍고 다음 행으로. 아니면 그 장만 찍어 고친다.

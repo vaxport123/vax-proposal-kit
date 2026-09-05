@@ -40,6 +40,12 @@
   로고 파일과 hex는 `bids/<사업>/ci/`에 두고 `_STATE.md`에 적는다. 예: 한국청년기업가정신재단 `#1b4fc4` · 한국자살예방협회 `#e8202a` · KITECH `#0047bb` · 국립순천대 `#0068B0`.
 - 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
 
+## 그림 그리기 (2026-09-05 도식 6장 실측)
+- 벡터(`createVector`)는 `vectorPaths`를 넣은 뒤 **x·y를 경로 최소점으로 다시 놓는다.** 안 놓으면 (0,0)으로 튄다. 헬퍼 `arrow`·`curvePath`가 처리한다.
+- 곡선 경로는 정거장 원 **아래 층**에 둔다: `slide.insertChild(구역 띠 다음 index, path)`.
+- 텍스트 속성(정렬·글자)을 바꿀 때도 그 글꼴을 `loadFontAsync`해야 한다(안 하면 「unloaded font」).
+- 한 장을 그림으로 바꾸는 순서: `clearBody(slide)`(본문→노트) → 구역/바탕 → 경로·화살표 → 요소(원·헤드셋·상자) → 라벨 → 결론 y → 화면 한 장 확인. 장 하나에 한 호출.
+
 ## 고칠 때 (2026-09-05 v5 2차 손질 실측)
 - **노드 이름은 역할마다 하나**: 간트 막대와 결론 문장 배경에 같은 이름(`bg-bar`)을 썼더니 「결론을 본문 아래로」 스크립트가 간트 첫 막대를 끌고 갔다. 헬퍼는 결론 배경을 `bg-closing`으로 쓴다. 이름 규약: title · closing · bg-closing · crumb · crumb-sec · page · caption · src · signature · photo-* · bg-th · bg-tr · bg-rule · bg-dot · bg-stepdot · bg-stepline · bg-cardline · bg-block · bg-gantt.
 - **여러 열 장은 한 줄로 재적재하지 않는다.** 열마다 y가 다른 장(단계·타임라인·사진+표)을 y 순서 한 줄로 다시 쌓으면 열이 흩어진다. 표는 `bg-tr` 행을 머리 행 아래 이어 붙이고, 단계·카드는 `bg-stepdot`·`bg-cardline` x로 열을 나눠 열마다 쌓는다.
