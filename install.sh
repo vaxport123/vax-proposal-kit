@@ -86,6 +86,14 @@ install_builtin(){ # $1=name
   log "ⓘ 내장 — 설치 불필요(데스크톱 Claude에 이미 있음): $1"
 }
 
+install_mcp(){ # $1=name $2=source(owner/repo@version) — MCP 서버는 Claude Code CLI에 등록한다. 판을 고정한다(npx -y pkg@version).
+  local name="$1" src="$2" pkg
+  pkg="${src##*/}"
+  if ! command -v claude >/dev/null 2>&1; then log "ⓘ claude CLI 없음 — 데스크톱 Claude는 설정 > 커넥터에서 MCP 추가: npx -y $pkg"; return 0; fi
+  if claude mcp list 2>/dev/null | grep -q "^$name"; then log "· 이미 등록됨(스킵): $name"; return 0; fi
+  claude mcp add "$name" -- npx -y "$pkg" >/dev/null 2>&1 && log "✓ 등록: claude mcp add $name -- npx -y $pkg" || log "⚠ 실패 — 수동: claude mcp add $name -- npx -y $pkg"
+}
+
 [ "$LIST_ONLY" = 0 ] && hdr "vax-proposal-kit 설치 시작  (claude=$HAS_CLAUDE, codex=$HAS_CODEX, force=$FORCE)"
 
 while IFS=$'\t' read -r name method source TARGETS note; do
@@ -99,6 +107,7 @@ while IFS=$'\t' read -r name method source TARGETS note; do
     npx)         install_npx "$name" "$source" ;;
     marketplace) install_marketplace "$name" "$source" "${note:-}" ;;
     builtin)     install_builtin "$name" ;;
+    mcp)         install_mcp "$name" "$source" ;;
     *) log "⚠ 알 수 없는 method: $method" ;;
   esac
 done < "$MANIFEST"

@@ -164,10 +164,10 @@ bids/                           (git 제외) 사업 폴더 — _STATE.md · 01~0
 | 스킬 | 출처 | 의견 (2026-09-04) |
 |---|---|---|
 | **Figma 공식 `figma-use-slides`** | Figma MCP 커넥터 내장(설치 불필요) | **채택(2026-09-05)** — Slides 좌표 어긋남 회피·배치 검증 스크립트·안티패턴 16. `figma-howto.md` 전제에 넣었고 헬퍼 `validate()`로 옮겼다 |
-| `yoonmoon` | amondnet/yoonmoon (MIT) | `detect`(AI 가능성 판정)·`proofread`(맞춤법)가 키트에 없는 기능. 윤문은 기존 humanize-korean 하나만 쓴다. Tools DB 검토 뒤 `skills.tsv` 주석 줄을 푼다 |
-| `korean-skills` grammar-checker | daleseo/korean-skills | 국립국어원 기준 맞춤법. yoonmoon proofread와 하나만 고른다 |
-| `mcp-openverse` | neno-is-ooo/mcp-openverse | CC·공공 저작물 사진 검색, 출처 문구가 붙어 나옴. 분위기용 사진에만(발주처 시설 사진은 못 찾는다). MCP 서버라 `claude mcp add` |
-| `browser-pilot` / agent-browser | Dev-GOM 마켓플레이스 / npm | 페인포인트 조사에서 회의록·감사 PDF처럼 JS 뒤 페이지 읽기. deep-research 보완 |
+| `yoonmoon` | amondnet/yoonmoon (MIT) | **채택(09-05 검토 완료)** — 파일 43개 전부 SKILL.md·참고 문서, 실행 코드 없음. `detect`(AI 가능성 판정)·`proofread`(맞춤법)만 쓰고 윤문은 humanize-korean 하나로. `skills.tsv` 등록 |
+| `korean-skills` grammar-checker | daleseo/korean-skills | 검토 완료(프롬프트만, 안전). yoonmoon proofread와 겹쳐 **보류** — 하나만 쓴다 |
+| `mcp-openverse` | neno-is-ooo/mcp-openverse | **채택(09-05 검토 완료)** — 289줄 TypeScript, 의존성 fastmcp·zod, api.openverse.org만 호출, 키·환경변수 없음. 판 0.1.1로 고정. 분위기용 사진에만(발주처 시설 사진은 못 찾는다). `skills.tsv` mcp 줄 |
+| `browser-pilot` | Dev-GOM 마켓플레이스 | **제외(09-05 검토)** — 세션 시작 훅이 프로젝트 폴더에 스크립트를 복사하고 `npm install`·`npm run build`를 자동 실행, 종료 훅이 프로세스를 죽인다. 정상 도구지만 우리 기준(설치 시 자동 실행 금지)에 걸린다. 페인포인트 조사의 JS 페이지는 Claude에 이미 있는 Chrome DevTools MCP나 agent-browser(hermes와 같은 것)로 |
 | `hwpx-plugins` · `easy-hwp` · k-skill HWP | airmang · nathankim0 · NomaDamas | hwp 제출용. claw-hwp와 비교해 하나만 |
 | `axlabs-mckinsey-pptx` | seulee26/mckinsey-pptx (MIT) | 템플릿 40종. **디자인 자율 방향과 충돌**해 보류 |
 | hanspell · Felo Slides · 2Slides | — | 제안서 본문을 외부 서버로 보낸다 → **대외비라 뺀다** |
