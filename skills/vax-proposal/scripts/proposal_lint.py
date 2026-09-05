@@ -18,6 +18,7 @@
   구조  L8 문두 접속사·담화표지·되풀이 결론
   형식  L9 마크다운 표(fig 블록으로 바꿔야) · L10 출처 번호 [n]·03a 파일 · L11 공개 금지·내부 표기 · L12 fig JSON 깨짐
   계획  P1 디자인 브리프 · P2 제목 사슬(명사형·40자) · P3 같은 유형 연속 3장 · P4 초안 문단 번호 빈틈 · P5 RFP 대응표 빈칸
+  게이트(상)는 RFP 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 문단 열 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
 """
 import argparse
 import json
@@ -280,7 +281,7 @@ def lint_plan(md, path=""):
     # P1 브리프
     m = re.search(r"^#+.*브리프.*$", md, re.M)
     if not m:
-        add(0, "상", "P1", "디자인 브리프 절이 없다(deck.md §5) — 시각 컨셉·팔레트·글자 단계·레이아웃 가족·여백 장·헤더 좌표")
+        add(0, "중", "P1", "디자인 브리프 절이 없다(deck.md §5) — 시각 컨셉·팔레트·글자 단계·레이아웃 가족·여백 장·헤더 좌표")
     else:
         start = m.end()
         nxt = re.search(r"^#+ ", md[start:], re.M)
@@ -327,7 +328,7 @@ def lint_plan(md, path=""):
             if v and v == prev:
                 run += 1
                 if run == 3:
-                    add(ln + 2 + r_i, "상", "P3", "같은 유형 「%s」 연속 3장 — 유형을 바꾸거나 여백 장을 넣는다(deck.md §5)" % v)
+                    add(ln + 2 + r_i, "중", "P3", "같은 유형 「%s」 연속 3장 — 유형을 바꾸거나 여백 장을 넣는 쪽을 본다(deck.md §5 경향)" % v)
             else:
                 run = 1
             prev = v or prev
@@ -429,7 +430,7 @@ def selftest():
     P = lint_plan(plan_bad)
     ok("P1 브리프 없음", "P1" in codes(P))
     ok("P2 명사형 제목", "P2" in codes(P))
-    ok("P3 연속 3장", any(f["code"] == "P3" and f["sev"] == "상" for f in P))
+    ok("P3 연속 3장", any(f["code"] == "P3" and f["sev"] == "중" for f in P))
     ok("P4 문단 빈틈", "P4" in codes(P))
     ok("P5 대응표 없음", "P5" in codes(P))
     plan_good = ("# 계획\n\n## 디자인 브리프\n- 시각 컨셉: 강의실에서 골목으로 걸어 나가는 동선\n- 팔레트: #0068B0 · 진한 · 옅은\n- 글자 단계: 48/22/19/13\n"
