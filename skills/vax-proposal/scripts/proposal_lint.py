@@ -17,7 +17,7 @@
   리듬  L5 문장 40자 초과(절 첫 문단 · 60자 초과는 어디서나) · L6 같은 길이 문장 5연속 · 「세 가지」 강박 · L7 문단마다 반복 동사
   구조  L8 문두 접속사·담화표지·되풀이 결론
   형식  L9 마크다운 표(fig 블록으로 바꿔야) · L10 출처 번호 [n]·03a 파일 · L11 공개 금지·내부 표기 · L12 fig JSON 깨짐
-  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·40자) · P3 같은 유형 연속 3장 · P4 초안 문단 번호 빈틈 · P5 RFP 대응표 빈칸
+  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 유형 연속 3장 · P4 초안 문단 번호 빈틈 · P5 RFP 대응표 빈칸
   게이트(상)는 RFP 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 문단 열 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
 """
 import argparse
@@ -307,6 +307,8 @@ def lint_plan(md, path=""):
                 add(0, "하", "P2", "제목 %d이 %d자(40자 상한) — 근거 한 줄을 부제로" % (k, len(tt)), tt)
             if not re.search(r"(다|요|까|니다)\s*[.?!]?\s*$", tt) and not re.search(r"^(PART|Ⅰ|Ⅱ|Ⅲ|Ⅳ|Ⅴ|표지|목차)", tt):
                 add(0, "중", "P2", "제목 %d이 명사형 — 한 문장 주장(~합니다)으로" % k, tt)
+            if re.search(r"(장|절|뒤|아래|별지|부록)에서\s*(답|다룹|설명|말|보)", tt) or re.search(r"후술|참고하", tt):
+                add(0, "중", "P2", "제목 %d이 다른 장을 가리킨다 — 그 장의 근거를 통합한 주장으로(deck.md §2-1 ①)" % k, tt)
         if len(titles) < 5:
             add(0, "중", "P2", "제목 사슬이 %d줄 — 본문 장 전부의 제목을 순서대로" % len(titles))
 
@@ -440,6 +442,7 @@ def selftest():
                  "## RFP 요구 대응표\n| 요구 ID | 대응 슬라이드 |\n|---|---|\n| 기획-001 | 3 |\n| 기능-001 | 4 |\n")
     G = lint_plan(plan_good)
     ok("좋은 계획은 상 없음", not any(f["sev"] == "상" for f in G))
+    ok("P2 가리키기 제목", any("가리킨다" in f["msg"] for f in lint_plan(plan_good.replace("5. 13주에 검수합니다", "5. 품질 여섯 항목은 Ⅲ장에서 답합니다"))))
     ok("P6 목차 쪽번호", "P6" in codes(lint_plan(plan_good + "\n목차: Ⅰ 제안개요 P.03~09\n")))
     print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과(낱말·리듬·구조·형식·계획)" % n[0])
     return 1 if fails else 0
