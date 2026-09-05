@@ -14,6 +14,9 @@
 - 팀 라이브러리가 있으면 `get_libraries`로 확인해 그 컴포넌트를 우선 쓴다. 회사 토큰 변수가 Figma에 없으면 만들지 말고 알린다.
 
 ## 만들기
+- **틀에서 시작한다.** 레이아웃 라이브러리 https://www.figma.com/slides/jnsArJT6nEoWKVZKW3c1Fz (틀 14종, 자리표시 글)를 복제해 시작하거나, 스크립트로 만들 때는 `figma_slides_helpers.js` + `figma_slides_layouts.js`를 붙여 `houseChrome(s, P, {...})` → `applyLayout(s, layoutFor(증거유형), P, content)` 순서로 깐다. 좌표를 손으로 계산하지 않는다(v5의 실패).
+- **새로 만든 Slides 파일에서는 같은 스크립트 안에서 `getSlideGrid()`가 `[]`를 돌려준다**(2026-09-06 실측 — 만든 뒤에도 빈 배열). 만든 슬라이드 id를 변수에 모아 쓰고, 다음 호출에서 `figma.currentPage.findAllWithCriteria({types:["SLIDE"]})`로 찾는다.
+- 행(SLIDE_ROW) 노드를 `get_screenshot`하면 그 행의 슬라이드가 한 줄로 찍힌다(장 하나씩 찍지 않아도 된다 · 26장 행은 두 줄로 접힌다). 원본 폭 = n×1960 + (n-1)×200(Slides 파일) — 이 값으로 잘라 모음판을 만든다.
 - **`appendChild`를 먼저, `x`·`y`는 그 뒤에** — 모든 노드, 모든 깊이에서. 순서를 바꾸면 노드가 (−240, −240) 어긋나고, 간헐적이라 한 번 잘 됐다고 안전하지 않다. 헬퍼의 프리미티브는 이 순서를 지킨다. 어긋난 노드를 240 더해 보정하지 말고 순서를 고친다.
 - 새 Slides 파일은 기본 밝은 테마가 깔린다. 그 테마 색·글자 스타일에 끌려가지 말고 브리프 값으로 덮어쓴다.
 - 새 파일 `create_new_file(editorType: slides)` → PART마다 `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스).

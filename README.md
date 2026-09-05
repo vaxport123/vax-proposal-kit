@@ -99,6 +99,7 @@ flowchart LR
 
 | 날짜 | 공고 | 결과 |
 |---|---|---|
+| 2026-09-06 | 회사 손 덱 3개에서 레이아웃 뽑기 | 재도전(46)·생명지킴이(44)·공정자동화(54) 118장을 행 단위 화면으로 보고 대표 26장 좌표를 재어 하우스 문법(헤더 띠·제목 48 강조 구절·부제·결론 띠·쪽번호)과 틀 14종을 `layouts.json`으로 정본화. 와이어프레임 PNG·JS 좌표·Figma 라이브러리(15장)까지 한 정본에서 생성. 배운 것: 손 덱은 사진이 절반, 표는 5~8장, 카드 안에 늘 그림·숫자·사진 하나, 어두운 면은 장마다 카드 하나, 결론 띠는 「그래서」 |
 | 2026-09-06 | 순천캠퍼스 VR v5를 세 번 고친 뒤 방향을 뒤집음 | 표·카드 두 얼굴 → 도식 10장 → 말투 세 번. 그래도 문서 같은 덱이었다. 원인은 **문단을 슬라이드에 흘려 넣는 파이프라인 자체**. 지운 것: 문단 전부 배치 규칙 · 절대 좌표로 쌓는 헬퍼(chrome·bar·body·part·toc) · 도식 14종을 덱에 쓰는 발상 · 개념도 레시피 6종. 넣은 것: 재료 게이트(§0) · 고스트 덱(장 = 액션 타이틀 + 증거 하나 + 출처) · 리듬 배분 · 증거 검사(`evidenceCheck`) · lint P4·P7·P8. 근거: Assertion-Evidence(Penn State) · 컨설팅 고스트 덱·액션 타이틀 · AI 덱이 밋밋한 이유는 입력 부재. 다음 일: 회사 손 덱 3개에서 레이아웃 컴포넌트 뽑기 |
 | 2026-09-05 | 순천캠퍼스 VR 덱 v5 46장 실제 제작(새 규칙 첫 완주) | 브리프 → 한 장 시안 → 행별 제작 → validate → 46장 화면 → 비판자 43건 반영. 배운 것: ① 본문 19px·문단 화면 배치가 캔버스 절반을 비웠다 → 문단은 노트, 글자 22 기준선, 도식 중심 ② 제목 사슬이 장마다 새 주제로 시작하고 「그 셋」이 흔들렸다 → 사슬 조건 셋(근거 통합·앞 제목 받기·붙여 읽기) ③ 규칙을 게이트로 올리면 글 문서가 된다 → 게이트는 RFP 관련만, 나머지는 경향 ④ Figma 토큰이 30분마다 끊긴다 → 노드 ID·진행을 상태 파일에 적어 재개 |
 | 2026-09-05 | 순천캠퍼스 VR 덱 두 판 비교 | 24장(네이티브)은 짜임새는 좋고 내용이 빠졌고, 46장(SVG 일괄)은 내용은 다 들어갔는데 하단 1/3 공백·13px 표·제목 중복으로 한 얼굴이 됐다. 원인은 하루에 여덟 번 덧붙인 규칙이 전부 「같게 만드는」 쪽이었기 때문. 규칙 파일 12개 → 글·덱·채점 셋으로 줄이고, 고정 좌표·장수 공식·결론 바 필수를 뺐다. 변주 규칙과 완성 덱 화면 검토를 넣었다 |
@@ -118,13 +119,16 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     material-pack.md              서버 ↔ 스킬 계약 — 재료 팩 열 개 절 + RFP 원문 자식 페이지
     staffing-table.md · reference-index.template.md   서식 구조 (데이터는 위키에만)
     images.md · figma-howto.md    절차 — 사진 출처·사용권 · Figma MCP 실측 요령
+    layouts.md · layouts.json   ★ 틀 — 회사 손 덱 3개(118장)에서 잰 하우스 문법 + 틀 14종 · Figma 라이브러리 링크
     guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
     proposal_lint.py            ★ 초안·계획 정규식 검사 L1~L12 · P1~P6(번역투·빈 수사·40자·리듬·표·출처·브리프·제목 사슬·연속 유형·대응표) — LLM 없음 · 「상」은 RFP 관련만
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
     figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)
     img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 프리미티브 + validate + evidenceCheck(증거 없는 장·사진 없는 PART·발주처 없는 제목)
-    figma_slides_diagrams.js      증거 레시피 넷(동선 지도·연결도·배치도·타임라인) + 표 채우기 — 레이아웃은 컴포넌트에서 고르는 것이 다음 일
+    figma_slides_diagrams.js      증거 레시피 넷(동선 지도·연결도·배치도·타임라인) + 표 채우기
+    figma_slides_layouts.js       ★ 하우스 틀 14종(houseChrome · applyLayout · layoutFor) — 좌표는 references/layouts.json 정본에서 layout_wireframes.py 가 생성
+    layout_wireframes.py          layouts.json → assets/layouts/*.png 와이어프레임 + JS 좌표 블록 (--selftest)
     ui_tokens.py                  디자인 정본 사본 (서버 ops/ui_tokens.py ← sync_tokens.sh)
 
 server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)

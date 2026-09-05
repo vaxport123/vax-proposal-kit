@@ -1,0 +1,158 @@
+{
+  "_about": "회사가 손으로 완성한 덱 세 개(재도전 인식개선 · 생명지킴이 영상 · 공정자동화 3D, 118장)에서 2026-09-06에 잰 레이아웃 정본. 좌표는 1920×1080. 이 파일이 정본이고, layout_wireframes.py 가 assets/layouts/*.png 와 figma_slides_layouts.js 의 LAYOUTS 블록을 여기서 만든다 — JS를 직접 고치지 말 것.",
+  "grid": {
+    "canvas": [1920, 1080],
+    "margin": 110,
+    "content": {"x": 110, "y": 270, "w": 1700, "h": 630},
+    "header": {"band": [0, 0, 1920, 90], "crumb": {"x": 110, "y": 32, "size": 23}, "logo": {"x": 1627, "y": 30, "w": 183, "h": 33}},
+    "title": {"x": 110, "y": 124, "w": 1700, "size": 48, "accentPhrases": "1~2"},
+    "subtitle": {"x": 110, "y": 196, "w": 1700, "size": 20},
+    "closingBar": {"x": 110, "y": 930, "w": 1700, "h": 76, "accentBar": 6, "size": 24},
+    "page": {"x": 900, "y": 1040, "w": 120, "size": 15},
+    "sizes": {"title": 48, "subtitle": 20, "cardHeading": 31, "cardBody": 24, "cardSub": 19, "bigNumber": 106, "tableHead": 18, "tableCell": 18, "caption": 15, "closing": 24},
+    "_measured": "세 덱 실측: 좌 여백 79/106/130 · 본문 폭 1660~1762 · 제목 48~50 y124~166 · 부제 20~25 · 본문 y230~310에서 시작 · 결론 띠 y915~1018 h62~92 · 로고 우상단 · 쪽번호 하단 중앙 15"
+  },
+  "layouts": [
+    {"key": "L01", "name": "표지", "chrome": false, "evidence": ["사진"], "sources": ["C1", "B1", "A1"],
+     "note": "오른쪽 절반 사진(또는 전면 어두운 사진) + 왼쪽에 로고·제목·부제·범위·제출일. 회사명은 제목 아래 작게.",
+     "zones": [
+       {"id": "photo", "role": "photo", "x": 960, "y": 0, "w": 960, "h": 1080},
+       {"id": "logo", "role": "logo", "x": 156, "y": 150, "w": 236, "h": 67},
+       {"id": "title", "role": "text", "x": 156, "y": 431, "w": 1300, "h": 176, "size": 68, "weight": "bold", "text": "사업명 그대로 두 줄"},
+       {"id": "sub", "role": "text", "x": 156, "y": 684, "w": 1500, "h": 64, "size": 46, "weight": "bold", "text": "한 줄 컨셉"},
+       {"id": "meta", "role": "text", "x": 156, "y": 758, "w": 1400, "h": 26, "size": 22, "text": "과업 범위 한 줄"},
+       {"id": "date", "role": "text", "x": 156, "y": 1004, "w": 700, "h": 25, "size": 21, "text": "제출일자 · 제안사"}
+     ]},
+    {"key": "L02", "name": "목차", "chrome": true, "evidence": [], "sources": ["B2", "A3", "C2"],
+     "note": "2×2 상자에 PART 번호·장 제목·절 목록. 쪽번호를 적지 않는다(한준 2026-09-04).",
+     "zones": [
+       {"id": "box1", "role": "card", "x": 110, "y": 270, "w": 830, "h": 300, "fields": ["PART Ⅰ", "장 제목", "절 목록"]},
+       {"id": "box2", "role": "card", "x": 980, "y": 270, "w": 830, "h": 300, "fields": ["PART Ⅱ", "장 제목", "절 목록"]},
+       {"id": "box3", "role": "card", "x": 110, "y": 600, "w": 830, "h": 300, "fields": ["PART Ⅲ", "장 제목", "절 목록"]},
+       {"id": "box4", "role": "card", "x": 980, "y": 600, "w": 830, "h": 300, "fields": ["PART Ⅳ", "장 제목", "절 목록"]}
+     ]},
+    {"key": "L03", "name": "PART 구분", "chrome": false, "evidence": [], "sources": ["B3", "C3", "A4"],
+     "note": "밝은 바탕, 왼쪽에 PART 라벨·장 제목·한 줄, 오른쪽에 흐린 큰 숫자. 어두운 배경 변형(A4)도 있다.",
+     "zones": [
+       {"id": "bigno", "role": "ghost-number", "x": 1100, "y": 160, "w": 700, "h": 520, "size": 520, "text": "01"},
+       {"id": "label", "role": "text", "x": 156, "y": 330, "w": 600, "h": 40, "size": 30, "color": "accent", "text": "PART Ⅰ"},
+       {"id": "title", "role": "text", "x": 156, "y": 380, "w": 1200, "h": 150, "size": 126, "weight": "bold", "text": "장 제목"},
+       {"id": "sub", "role": "text", "x": 156, "y": 700, "w": 1200, "h": 40, "size": 28, "color": "mid", "text": "이 장이 답하는 것 한 줄"}
+     ]},
+    {"key": "L04", "name": "사진 전면 + 한 문장", "chrome": false, "evidence": ["사진"], "sources": ["A5", "A8", "B11", "C2-7"],
+     "note": "문제 인식·캠페인·현장 장면. 어두운 덮개 위 큰 문장 하나, 아래 출처.",
+     "zones": [
+       {"id": "photo", "role": "photo", "x": 0, "y": 0, "w": 1920, "h": 1080},
+       {"id": "overlay", "role": "overlay", "x": 0, "y": 0, "w": 1920, "h": 1080},
+       {"id": "kicker", "role": "text", "x": 79, "y": 338, "w": 900, "h": 28, "size": 24, "color": "paper", "text": "Ⅰ-1 · 문제 인식"},
+       {"id": "title", "role": "text", "x": 79, "y": 409, "w": 1000, "h": 300, "size": 91, "weight": "bold", "color": "paper", "text": "숫자나 장면이 든 한 문장"},
+       {"id": "body", "role": "text", "x": 79, "y": 730, "w": 900, "h": 80, "size": 24, "color": "paper", "text": "근거 한 줄"},
+       {"id": "src", "role": "text", "x": 79, "y": 990, "w": 900, "h": 20, "size": 15, "color": "paper", "text": "출처: "}
+     ]},
+    {"key": "L05", "name": "큰 숫자 둘 + 결론 카드", "chrome": true, "evidence": ["차트/큰 숫자"], "sources": ["A7", "A6", "B26"],
+     "note": "왼쪽 옅은 카드에 큰 숫자 둘(vs)·라벨·출처, 오른쪽 어두운 카드에 「그래서」. 숫자 넷이면 가로 4칸으로 바꾼다.",
+     "zones": [
+       {"id": "cardbg", "role": "panel", "x": 110, "y": 270, "w": 1120, "h": 630},
+       {"id": "n1", "role": "text", "x": 150, "y": 420, "w": 420, "h": 124, "size": 106, "weight": "black", "color": "accent", "text": "83.5%"},
+       {"id": "l1", "role": "text", "x": 150, "y": 577, "w": 420, "h": 28, "size": 24, "text": "무엇의 값인가"},
+       {"id": "s1", "role": "text", "x": 150, "y": 611, "w": 420, "h": 22, "size": 19, "color": "mid", "text": "출처 · 시점"},
+       {"id": "vs", "role": "text", "x": 590, "y": 470, "w": 60, "h": 28, "size": 24, "color": "mid", "text": "그런데"},
+       {"id": "n2", "role": "text", "x": 680, "y": 420, "w": 420, "h": 124, "size": 106, "weight": "black", "color": "ink", "text": "1.3회"},
+       {"id": "l2", "role": "text", "x": 680, "y": 577, "w": 420, "h": 28, "size": 24, "text": "무엇의 값인가"},
+       {"id": "s2", "role": "text", "x": 680, "y": 611, "w": 420, "h": 22, "size": 19, "color": "mid", "text": "출처 · 시점"},
+       {"id": "side", "role": "card-dark", "x": 1270, "y": 270, "w": 540, "h": 630},
+       {"id": "sideH", "role": "text", "x": 1300, "y": 320, "w": 480, "h": 90, "size": 34, "weight": "bold", "color": "paper", "text": "그래서 발주처에 무엇이 좋은가"},
+       {"id": "sideB", "role": "text", "x": 1300, "y": 430, "w": 480, "h": 400, "size": 22, "color": "paper", "text": "근거 두세 줄"}
+     ]},
+    {"key": "L06", "name": "사진 스트립 + 카드", "chrome": true, "evidence": ["사진"], "sources": ["C2-7", "B4", "B13", "A15"],
+     "note": "발주처 현장·직군·우리 실적 사진 4장(3~6장 가변)을 한 줄로, 아래 라벨과 설명 카드. 사진에는 출처 캡션.",
+     "repeat": {"count": 4, "gap": 24, "ids": ["photo", "label", "text"]},
+     "zones": [
+       {"id": "photo", "role": "photo", "x": 110, "y": 270, "w": 407, "h": 280},
+       {"id": "label", "role": "label", "x": 110, "y": 566, "w": 407, "h": 38, "size": 18, "text": "01 · 사진 이름"},
+       {"id": "text", "role": "card", "x": 110, "y": 616, "w": 407, "h": 160, "fields": ["무엇을 보여 주나", "한 줄"]},
+       {"id": "src", "role": "text", "x": 110, "y": 800, "w": 1700, "h": 18, "size": 15, "color": "mid", "text": "사진: 출처"}
+     ]},
+    {"key": "L07", "name": "큰 사진 좌 + 카드 우", "chrome": true, "evidence": ["사진", "렌더/시안", "지도", "배치도"], "sources": ["C2-6", "B22", "C2-18"],
+     "note": "왼쪽 60%에 사진·렌더·목업·지도·배치도 한 장, 오른쪽에 카드 셋(제목 31 · 본문 24). 사진 안 좌상단에 라벨 칩. 지도·배치도는 사진 자리에 routeMap·roomPlan 을 그린다.",
+     "zones": [
+       {"id": "photo", "role": "photo", "x": 110, "y": 270, "w": 1030, "h": 630},
+       {"id": "chip", "role": "label", "x": 142, "y": 300, "w": 340, "h": 48, "size": 17, "text": "사진 라벨 · 출처"},
+       {"id": "c1", "role": "card", "x": 1200, "y": 270, "w": 610, "h": 190, "fields": ["제목 31", "본문 24"]},
+       {"id": "c2", "role": "card", "x": 1200, "y": 490, "w": 610, "h": 190, "fields": ["제목 31", "본문 24"]},
+       {"id": "c3", "role": "card", "x": 1200, "y": 710, "w": 610, "h": 190, "fields": ["제목 31", "본문 24"]}
+     ]},
+    {"key": "L08", "name": "카드 셋(하우스 카드)", "chrome": true, "evidence": ["비교", "연결도"], "sources": ["B4", "B12", "C2-4", "A44"],
+     "note": "번호 21 · 제목 38 · 본문 27 · 부연 19. 카드 사이 화살표는 순서일 때만. 카드 안에 픽토그램·숫자·사진 중 하나를 넣어 글만 있는 카드를 피한다. 넷이면 w400·gap 33.",
+     "zones": [
+       {"id": "c1", "role": "card", "x": 110, "y": 300, "w": 532, "h": 560, "fields": ["01", "제목 38", "본문 27", "부연 19"]},
+       {"id": "a1", "role": "arrow", "x": 642, "y": 560, "w": 52, "h": 40},
+       {"id": "c2", "role": "card", "x": 694, "y": 300, "w": 532, "h": 560, "fields": ["02", "제목 38", "본문 27", "부연 19"]},
+       {"id": "a2", "role": "arrow", "x": 1226, "y": 560, "w": 52, "h": 40},
+       {"id": "c3", "role": "card", "x": 1278, "y": 300, "w": 532, "h": 560, "fields": ["03", "제목 38", "본문 27", "부연 19"]}
+     ]},
+    {"key": "L09", "name": "흐름도 입력 → 핵심 → 출력", "chrome": true, "evidence": ["연결도"], "sources": ["C7", "B7", "C2-9"],
+     "note": "가운데 어두운 카드가 핵심(자산·엔진), 안에 상자 둘. 왼쪽 입력, 오른쪽 출력. 화살표로 잇는다.",
+     "zones": [
+       {"id": "in", "role": "card", "x": 130, "y": 330, "w": 330, "h": 500, "fields": ["01 입력", "항목 3~5"]},
+       {"id": "a1", "role": "arrow", "x": 460, "y": 560, "w": 70, "h": 40},
+       {"id": "core", "role": "card-dark", "x": 530, "y": 310, "w": 720, "h": 540},
+       {"id": "coreH", "role": "text", "x": 560, "y": 340, "w": 660, "h": 40, "size": 24, "color": "paper", "text": "핵심 한 줄"},
+       {"id": "core1", "role": "card", "x": 558, "y": 460, "w": 315, "h": 275, "fields": ["구성 1", "항목"]},
+       {"id": "core2", "role": "card", "x": 907, "y": 460, "w": 315, "h": 275, "fields": ["구성 2", "항목"]},
+       {"id": "a2", "role": "arrow", "x": 1250, "y": 560, "w": 70, "h": 40},
+       {"id": "out", "role": "card", "x": 1320, "y": 330, "w": 470, "h": 500, "fields": ["03 산출", "항목 3~5"]}
+     ]},
+    {"key": "L10", "name": "비교 두 패널", "chrome": true, "evidence": ["비교"], "sources": ["B17", "B5", "C22"],
+     "note": "왼쪽 「이렇게 하지 않습니다/문제」, 오른쪽 「대신 이렇게/목표」. 각 4행. 항목 표 비교(○×△)는 L11 표로.",
+     "zones": [
+       {"id": "left", "role": "panel", "x": 110, "y": 300, "w": 800, "h": 560},
+       {"id": "leftH", "role": "text", "x": 140, "y": 334, "w": 740, "h": 60, "size": 30, "weight": "bold", "text": "×  하지 않는 것"},
+       {"id": "leftSub", "role": "text", "x": 140, "y": 394, "w": 740, "h": 34, "size": 20, "color": "mid", "text": "기준 한 줄"},
+       {"id": "leftRows", "role": "rows", "x": 140, "y": 458, "w": 740, "h": 352, "count": 4, "rowH": 88, "size": 23},
+       {"id": "right", "role": "panel-tint", "x": 950, "y": 300, "w": 860, "h": 560},
+       {"id": "rightH", "role": "text", "x": 980, "y": 334, "w": 800, "h": 60, "size": 30, "weight": "bold", "color": "accent", "text": "대신 이렇게"},
+       {"id": "rightSub", "role": "text", "x": 980, "y": 394, "w": 800, "h": 34, "size": 20, "color": "mid", "text": "기준 한 줄"},
+       {"id": "rightRows", "role": "rows", "x": 980, "y": 458, "w": 800, "h": 352, "count": 4, "rowH": 88, "size": 23}
+     ]},
+    {"key": "L11", "name": "표 전폭", "chrome": true, "evidence": ["표"], "sources": ["C9", "A15", "A30", "B37", "C22"],
+     "note": "요구 대조·규격·실적·위험·인력처럼 표가 곧 내용인 장에만. 머리 행 진한 색, 첫 열 강조, 행 높이 50. 행 수에 맞춰 표를 늘리지 말고 글자 18~20을 지킨다.",
+     "zones": [
+       {"id": "table", "role": "table", "x": 110, "y": 270, "w": 1700, "h": 600, "headH": 50, "rowH": 50, "cols": [400, 430, 430, 440], "size": 18},
+       {"id": "src", "role": "text", "x": 110, "y": 884, "w": 1700, "h": 18, "size": 15, "color": "mid", "text": "출처 · 기준"}
+     ]},
+    {"key": "L12", "name": "일정(간트) + 요약 카드", "chrome": true, "evidence": ["타임라인"], "sources": ["C14", "A40", "B26"],
+     "note": "위에 기간·검토·여유 요약 카드 셋, 아래 항목 열 + 기간 열 격자와 막대. 승인 지점은 마름모.",
+     "zones": [
+       {"id": "k1", "role": "card", "x": 110, "y": 270, "w": 548, "h": 130, "fields": ["4개월", "전체 기간"]},
+       {"id": "k2", "role": "card", "x": 686, "y": 270, "w": 548, "h": 130, "fields": ["3개월", "실제 제작"]},
+       {"id": "k3", "role": "card", "x": 1262, "y": 270, "w": 548, "h": 130, "fields": ["5일", "여유"]},
+       {"id": "gantt", "role": "gantt", "x": 110, "y": 430, "w": 1700, "h": 470, "labelW": 410, "cols": 4, "headH": 50, "rowH": 52, "rows": 7}
+     ]},
+    {"key": "L13", "name": "조직도 + 숫자 넷", "chrome": true, "evidence": ["연결도"], "sources": ["C11", "A13", "B35"],
+     "note": "발주처 · 사업총괄 · 외부 자문 세 상자를 위에, 아래 부문 4개 카드에 인원 숫자. 인력표는 L11.",
+     "zones": [
+       {"id": "top1", "role": "card", "x": 160, "y": 300, "w": 360, "h": 150, "fields": ["발주처", "담당"]},
+       {"id": "top2", "role": "card-dark", "x": 620, "y": 300, "w": 680, "h": 150},
+       {"id": "top2T", "role": "text", "x": 650, "y": 340, "w": 620, "h": 70, "size": 28, "weight": "bold", "color": "paper", "text": "사업총괄 · PM"},
+       {"id": "top3", "role": "card", "x": 1400, "y": 300, "w": 360, "h": 150, "fields": ["외부 자문·검증", "역할"]},
+       {"id": "a1", "role": "arrow", "x": 520, "y": 355, "w": 100, "h": 40},
+       {"id": "a2", "role": "arrow", "x": 1300, "y": 355, "w": 100, "h": 40},
+       {"id": "label", "role": "text", "x": 160, "y": 500, "w": 800, "h": 28, "size": 24, "weight": "bold", "text": "실행 조직 · 4개 부문 · N명"},
+       {"id": "d1", "role": "card", "x": 160, "y": 540, "w": 370, "h": 300, "fields": ["부문", "N명", "역할 3"]},
+       {"id": "d2", "role": "card", "x": 570, "y": 540, "w": 370, "h": 300, "fields": ["부문", "N명", "역할 3"]},
+       {"id": "d3", "role": "card", "x": 980, "y": 540, "w": 370, "h": 300, "fields": ["부문", "N명", "역할 3"]},
+       {"id": "d4", "role": "card", "x": 1390, "y": 540, "w": 370, "h": 300, "fields": ["부문", "N명", "역할 3"]}
+     ]},
+    {"key": "L14", "name": "마무리", "chrome": false, "evidence": ["사진"], "sources": ["A46", "B44", "C28"],
+     "note": "어두운 사진 위 약속 한 문장 + 캠페인 구절. 밝은 변형(C28)은 「감사합니다」와 세 낱말.",
+     "zones": [
+       {"id": "photo", "role": "photo", "x": 0, "y": 0, "w": 1920, "h": 1080},
+       {"id": "overlay", "role": "overlay", "x": 0, "y": 0, "w": 1920, "h": 1080},
+       {"id": "kicker", "role": "text", "x": 79, "y": 338, "w": 527, "h": 28, "size": 24, "color": "paper", "text": "사업명"},
+       {"id": "title", "role": "text", "x": 79, "y": 409, "w": 850, "h": 227, "size": 91, "weight": "bold", "color": "paper", "text": "약속 한 문장"},
+       {"id": "slogan", "role": "text", "x": 1573, "y": 667, "w": 240, "h": 62, "size": 53, "weight": "bold", "color": "accent", "text": "구절"},
+       {"id": "logo", "role": "logo", "x": 1694, "y": 939, "w": 134, "h": 69}
+     ]}
+  ]
+}
