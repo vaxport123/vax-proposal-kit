@@ -58,8 +58,8 @@ flowchart LR
     A["① ERP<br/>입찰레이더 진행상태 = 도전<br/>+ 우리담당 지정"] --> B["② 서버 · 30분 안<br/>📦 제안 재료 팩<br/>📄 RFP 원문(추출)<br/><b>LLM 0콜</b>"]
     B --> C["③ 담당자<br/>clone → install.sh<br/>Notion 커넥터"]
     C --> D["④ Claude · vax-proposal<br/>P1 검산 → P2 가점 게이트<br/>P3 레퍼런스 → 방향 동의<br/>P4 초안 + 검토 3회<br/>P5 심사 게이트 ≥ 80"]
-    D --> E["⑤ HTML 초안 1장<br/>회사 토큰 · 공개 금지 검사"]
-    E --> F["⑥ Figma<br/>발주처 CI 색 · Freesentation<br/>이때부터 Figma가 정본"]
+    D --> E["⑤ 슬라이드 계획<br/>제목 사슬 · 문단 배치 · 대응표<br/>디자인 브리프 · lint · 비판자"]
+    E --> F["⑥ Figma<br/>한 장 시안 → 행별 제작 → validate<br/>전 장 화면 → 비판자 · 이때부터 Figma가 정본"]
     style B fill:#e7f3ea,stroke:#0f7038
     style D fill:#e7ecf7,stroke:#082567
     style F fill:#fbefda,stroke:#8f5000
@@ -69,8 +69,8 @@ flowchart LR
 |---|---|---|---|
 | ② | 서버 `proposal_material.py` | 캐시·덤프·학습 DB·위키 색인을 열 개 절로 모은다. 판본이 같으면 다시 쓰지 않는다 | 공고 페이지의 자식 페이지 2개 |
 | ④ | 개인 Claude + `vax-proposal` | 재료 팩만 근거로 쓴다. 없는 것은 `⚠️ 확인필요`로 남긴다 | `bids/<사업명>/` (git 제외) |
-| ⑤ | `scripts/render_html.py` | 마크다운 → 회사 디자인 HTML. 서버 주소·토큰이 섞이면 렌더를 거부한다 | 로컬 |
-| ⑥ | Figma MCP | HTML을 슬라이드로. 강조색 한 자리만 발주처 CI로 바꾼다 | Figma |
+| ⑤ | 개인 Claude + `deck.md` | 제목 사슬(장 안 근거를 통합 · 앞 제목을 받음 · 붙여 읽어 한 글) → 문단 배치(문단은 노트) → RFP 대응표 → 디자인 브리프 → `proposal_lint.py --plan` → 비판자 | `07_슬라이드계획_vN.md` |
+| ⑥ | Figma MCP + `figma_slides_helpers.js` | 발주처 CI · Freesentation · 한 장 시안 확인 → 행별 제작 · `validate()` → 전 장 화면을 비판자에게. HTML 1장(`render_html.py`)은 필요할 때만 | Figma |
 
 ---
 
@@ -99,6 +99,7 @@ flowchart LR
 
 | 날짜 | 공고 | 결과 |
 |---|---|---|
+| 2026-09-05 | 순천캠퍼스 VR 덱 v5 46장 실제 제작(새 규칙 첫 완주) | 브리프 → 한 장 시안 → 행별 제작 → validate → 46장 화면 → 비판자 43건 반영. 배운 것: ① 본문 19px·문단 화면 배치가 캔버스 절반을 비웠다 → 문단은 노트, 글자 22 기준선, 도식 중심 ② 제목 사슬이 장마다 새 주제로 시작하고 「그 셋」이 흔들렸다 → 사슬 조건 셋(근거 통합·앞 제목 받기·붙여 읽기) ③ 규칙을 게이트로 올리면 글 문서가 된다 → 게이트는 RFP 관련만, 나머지는 경향 ④ Figma 토큰이 30분마다 끊긴다 → 노드 ID·진행을 상태 파일에 적어 재개 |
 | 2026-09-05 | 순천캠퍼스 VR 덱 두 판 비교 | 24장(네이티브)은 짜임새는 좋고 내용이 빠졌고, 46장(SVG 일괄)은 내용은 다 들어갔는데 하단 1/3 공백·13px 표·제목 중복으로 한 얼굴이 됐다. 원인은 하루에 여덟 번 덧붙인 규칙이 전부 「같게 만드는」 쪽이었기 때문. 규칙 파일 12개 → 글·덱·채점 셋으로 줄이고, 고정 좌표·장수 공식·결론 바 필수를 뺐다. 변주 규칙과 완성 덱 화면 검토를 넣었다 |
 | 2026-09-04 | **순천캠퍼스 VR** (R26BK01711646) | P0~P4 완주. 재료 팩 7초·17,000자, RFP 원문 33,465자 자식 페이지. P1 검산 100점 일치 · P2 실점 2~4 통과 · P3 매칭 12건 · 웹 조사 6건으로 컨셉 도출 · 초안 v1→v4(검토 3회). 이 과정에서 스크립트 결함 4건(배점 단위·기술:가격 어순·원문 미첨부·설치 스크립트 변수)을 잡아 고쳤다 |
 
@@ -118,7 +119,7 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     images.md · figma-howto.md    절차 — 사진 출처·사용권 · Figma MCP 실측 요령
     guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
-    proposal_lint.py            ★ 초안·계획 정규식 검사 20항목(번역투·빈 수사·40자·리듬·표·출처·브리프·연속 유형·대응표) — LLM 없음
+    proposal_lint.py            ★ 초안·계획 정규식 검사 L1~L12 · P1~P6(번역투·빈 수사·40자·리듬·표·출처·브리프·제목 사슬·연속 유형·대응표) — LLM 없음 · 「상」은 RFP 관련만
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
     figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)
     img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 헬퍼(좌표는 기본값)
@@ -127,7 +128,7 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
 server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)
   proposal_material.py          ★ 도전 공고 → 📦 재료 팩 + 📄 RFP 원문 · LLM 0콜 · 셀프테스트 48건
   systemd/                        vax-proposal-material.timer / .service 사본
-agents/proposal-critic.md       비판자 — lint 결과를 받아 A1~A9 · B1~B9 · 완성 덱 화면(PNG) 검토
+agents/proposal-critic.md       비판자 — lint 결과를 받아 A1~A9 · B1~B10(경향) · 완성 덱 화면(PNG) 검토
 examples/                     ★ 이름을 가린 완성 예시 한 세트(가상 발주처) — 01~07 서식 · lint 통과 상태 유지(회귀 테스트)
 loops/bid-loop/                 ★ /bid-loop 하네스 — 운행 규칙 · _STATE 상태 기계 · 야간 실행 래퍼
 fonts/                          Freesentation · Paperlogy 각 9굵기 TTF (SIL OFL) + 설치기

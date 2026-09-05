@@ -1,7 +1,7 @@
 # vax-proposal-kit 매니페스트 — 제안서 작성에 필요한 승인 스킬의 단일 정본(SOT)
 # vax-wiki-gateway/skills/skills.tsv 와 같은 형식이라 그쪽 install.sh 도 이 파일을 읽을 수 있다.
 # 필드는 TAB 구분: name <TAB> method <TAB> source <TAB> targets <TAB> note
-#   method: git | npx | marketplace | builtin
+#   method: git | npx | marketplace | builtin | mcp(claude mcp add name -- npx -y pkg@ver · 판 고정)
 #   targets: claude,codex (콤마)
 # 외부 스킬은 Tools DB(01.WIKI_AI)에서 상태=사용중 인 것만 등록한다. 후보·보류는 넣지 않는다.
 vax-proposal	git	https://github.com/vaxport123/vax-proposal-kit	claude	제안 상류: 재료 팩→방향→전략→초안→HTML 디자인→Figma (이 저장소)

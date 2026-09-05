@@ -84,7 +84,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 ### P6 · 슬라이드 계획 → Figma
 `deck.md`를 따른다. 고정은 §4 여섯 가지(발주처 CI 팔레트·글꼴 가족·헤더·쪽번호·사진 출처·내부 표기 없음)뿐이고, 레이아웃·위계·도식 형태는 덱마다 Claude가 정한다(한준 2026-09-05 "디자인·레이아웃 자율").
 순서: ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬 → ③ 초안 문단 전부 배치(요약 금지) → ④ RFP 요구 ID 대응표 → ⑤ **디자인 브리프**(시각 컨셉·팔레트·글자 단계·레이아웃 가족·여백 장·헤더 좌표, `deck.md` §5) → `07_슬라이드계획_v1.md`
-→ ⑥ `python3 scripts/proposal_lint.py 07_슬라이드계획_v1.md --plan`(브리프·제목 사슬·연속 유형·문단 번호·대응표 빈칸 — 상이면 못 간다) → `proposal-critic`(mode deck) → ⑦ 사진 목록·발주처 CI(`images.md`)
+→ ⑥ `python3 scripts/proposal_lint.py 07_슬라이드계획_v1.md --plan`(「상」은 RFP 관련만: 제목 사슬 절·장별 표·문단 번호 열·대응표 빈칸. 브리프·연속 유형·가리키기 제목은 「중」 — 경향) → `proposal-critic`(mode deck) → ⑦ 사진 목록·발주처 CI(`images.md`)
 → ⑧ **한 장 시안**을 만들어 화면을 찍어 사용자 확인(`figma-howto.md` — Figma 공식 `figma-use-slides` 스킬을 먼저 읽는다) → ⑨ 행 단위 제작, 행마다 `validate()` → ⑩ **전 장 화면을 찍어 비판자에게 다시**(`deck.md` §6).
 헤드리스(`claude -p`)에서는 Figma MCP가 붙지 않는다. P6-시안 이후는 사람이 앉은 세션에서 한다.
 HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md` — 회사 토큰이 자동으로 들어가고, 공개 금지 정보가 있으면 렌더가 거부된다(`guardrails.md`).
@@ -104,7 +104,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행
 7. **초안은 초안이다**: 사람이 Figma·노션에서 고친 값이 정답이다. 되돌려 덮어쓰지 않는다.
 
 ## 함께 쓰는 스킬
-`humanize-korean` · `fluent-korean`(문체), `deep-research`(발주처·경쟁사), `frontend-design`(HTML 레이아웃), Figma MCP,
+`humanize-korean` · `fluent-korean`(문체) · `yoonmoon`(AI 가능성 판정·맞춤법), `deep-research`(발주처·경쟁사), `openverse` MCP(CC 사진 · 분위기용만), `frontend-design`(HTML 레이아웃), Figma MCP(공식 `figma-use-slides` 먼저),
 하류의 `vax-exit-kit`(완성 서식) · `doc-gen`(docx/pptx) · `claw-hwp` · `hwp-convert`(hwp).
 
 ## 파일
@@ -113,7 +113,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행
 - `references/review-rubric.md` — **채점**: P5 페르소나 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
 - `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
-- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 낱말·리듬·구조·형식·계획 20항목, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(Slides 헬퍼 + `validate`) · `ui_tokens.py`(디자인 정본 사본)
+- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(Slides 헬퍼 + `validate`) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)
-- `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A8 · 디자인 B1~B9). `install.sh`가 `~/.claude/agents/`에 복사한다
+- `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A9 · 디자인 B1~B10, B군은 경향 지적). `install.sh`가 `~/.claude/agents/`에 복사한다
 - `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md` · `run-loop.sh` · `settings.json`

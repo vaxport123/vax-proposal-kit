@@ -19,7 +19,8 @@
 - 새 파일 `create_new_file(editorType: slides)` → PART마다 `figma.createSlideRow(r)` + `row.name` → `figma.createSlide(r, c)`(둘 다 숫자 인덱스).
   빈 슬라이드를 먼저 전부 만들고 이름·id 표를 받아 둔다. 같은 스크립트 안의 `getSlideGrid()`는 갱신 전 값을 준다.
 - 행(장)별 스크립트를 병렬로 보내도 된다(5개 동시까지 안전했다). 중간에 죽으면 그 슬라이드에 부분 생성물이 남는다 → 다시 돌리기 전에 자식을 지운다.
-- `scripts/figma_slides_helpers.js`를 스크립트 맨 앞에 붙인다(`loadFonts` · `chrome` · `bar` · `part` · `toc` · `logoBox` · `photoBox` · `placeSvg` · `body` · `leftovers`).
+- `scripts/figma_slides_helpers.js`를 스크립트 맨 앞에 붙인다(`loadFonts` · `chrome` · `bar` · `part` · `toc` · `logoBox` · `photoBox` · `placeSvg` · `body` · `notes` · `retitle` · `validate` · `leftovers`). 글자 단계 기본값은 `T`(deck.md §4 기준선) — 브리프 값이 다르면 `Object.assign(T, {...})`로 덮는다.
+- **Paperlogy는 로컬에 설치돼 있어도 Figma 글꼴 목록에 안 뜰 수 있다**(2026-09-05 v5 실측). 그러면 표지·PART·큰 숫자도 Freesentation 9 Black으로 간다 — 대체 글꼴을 다른 가족에서 고르지 않는다.
 - 글꼴은 `listAvailableFontsAsync`로 「Freesentation / 7 Bold」식 스타일 이름을 확인하고 전부 `loadFontAsync`한 뒤 쓴다. 로컬에 설치돼 있으면 데스크톱 Figma가 바로 본다.
 - `textAutoResize = "HEIGHT"` 텍스트의 `height`는 스크립트 안에서 갱신되지 않는다(10으로 읽힘). 헬퍼 `estLines`(한글 1em · 영문 0.56 · 공백 0.28)로 줄 수를
   추정해 다음 요소의 y를 잡는다. 46px · 폭 1728이면 한 줄 약 37자.
@@ -42,7 +43,8 @@
 ## 마무리
 - 행(장)을 만들 때마다 헬퍼 `validate(slideIds)`를 돌린다(공식 스킬의 배치 검증을 옮긴 것 + 본문 18px 하한 + 빈 면적 추정). `clean`이면 화면을 안 찍고 다음 행. 아니면 그 장만 찍어 고친다.
 - `slide.speakerNotes`(마크다운 불릿)에 요점과 ⚠️ 확인필요를 넣는다. 본문에는 내부 표기를 남기지 않는다(`leftovers()`로 검색).
-- 기존 덱을 고칠 때는 장을 지우고 다시 만들지 않는다. 그 자리에서 고친다(사용자가 「처음부터」라고 한 때만 삭제).
+- 기존 덱을 고칠 때는 장을 지우고 다시 만들지 않는다. 그 자리에서 고친다(사용자가 「처음부터」라고 한 때만 삭제). 제목 사슬을 다시 썼으면 `retitle({ "14": "새 제목", … })`로 `title` 노드 글만 바꾼다.
+- 초안 문단은 `notes(slide, [문단…], skipInTalk)`로 발표자 노트에 넣는다. 발표에서 건너뛸 장(별지·회사 소개)은 `skipInTalk = true`.
 - **pptx 제출이 요구되면** Figma 내보내기(pdf)나 `doc-gen`(pptx) 경로를 쓰되, Freesentation은 오피스 기본 글꼴이 아니라 받는 쪽 PC에서 깨진다. pptx는 글꼴을 심거나 pdf로 낸다. hwp는 `claw-hwp`.
 - 그다음 `deck.md` §6대로 전 장 화면을 찍어 `bids/<사업>/shots/`에 받고 비판자에 넘긴다. 내보내기는 pdf면 Figma에서, hwp·pptx면 하류 스킬(`vax-exit-kit` · `doc-gen` · `claw-hwp`).
 

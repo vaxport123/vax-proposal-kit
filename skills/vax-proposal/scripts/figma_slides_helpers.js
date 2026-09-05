@@ -3,7 +3,7 @@
 // 2026-09-05: 아래 좌표 상수는 **기본값**이다. 전 장 같아야 하는 것은 헤더(브레드크럼·실선·시그니처)와 쪽번호만이고(deck.md §4),
 // 본문·결론 바 위치는 장의 내용에 따라 바꾼다(46장 덱에서 y=960 고정 결론 바가 하단 1/3 공백을 만들었다).
 // 모든 프리미티브는 appendChild 뒤에 x·y를 준다(Figma 공식 figma-use-slides 스킬의 「(-240,-240) 어긋남」 회피 — 순서를 바꾸지 말 것).
-// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·validate·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
+// 프리미티브(text·rect·line·loadFonts·logoBox·photoBox·placeSvg·notes·retitle·validate·leftovers)는 그대로 쓰고, 조합 함수(chrome·bar·part·toc·body)는 **예시**다 —
 // 덱의 디자인 브리프(deck.md §5)에 맞는 레이아웃 가족을 새로 짜는 쪽이 맞다(한준 2026-09-05 "디자인·레이아웃 자율").
 //
 // 쓰는 법: use_figma 스크립트 맨 앞에 이 파일 내용을 붙이고(모듈 import 없음), 아래처럼 부른다.
@@ -23,6 +23,8 @@ const X0 = 96, X1 = 1824, CONTENT_W = 1728;            // 좌우 여백 96
 const Y_CRUMB = 48, Y_RULE = 112, Y_TITLE = 150, Y_BODY = 300, Y_BAR = 960, Y_PAGE = 1040;
 const FONT = "Freesentation";
 const F = { black: "9 Black", bold: "7 Bold", medium: "5 Medium", regular: "4 Regular", light: "3 Light" };
+// 글자 단계 기본값(deck.md §4 기준선 · 2026-09-05 한준 "폰트가 작다" 뒤 한 단계 올림). 브리프가 다르면 T를 덮어쓴다: Object.assign(T, { title: 60 }).
+const T = { title: 54, sub: 24, key: 28, cardTitle: 36, body: 22, number: 150, table: 20, caption: 13, crumb: 22, page: 15, part: 84 };
 
 function hex(h) { const n = parseInt(h.slice(1), 16); return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 }; }
 function fill(h) { return [{ type: "SOLID", color: hex(h) }]; }
@@ -51,9 +53,10 @@ function text(parent, s, x, y, size, style, color, opts = {}) {
   t.lineHeight = { value: (opts.lh || 1.35) * 100, unit: "PERCENT" };
   if (opts.width) { t.resize(opts.width, 10); t.textAutoResize = "HEIGHT"; } else { t.textAutoResize = "WIDTH_AND_HEIGHT"; }
   if (opts.align) t.textAlignHorizontal = opts.align;
+  if (opts.name) t.name = opts.name;   // validate()·retitle()·leftovers()가 이름으로 찾는다: title · closing · crumb · page · caption · src · bg-*
   t.x = x; t.y = y;
   // 강조 낱말: 같은 텍스트 노드 안에서 범위 색만 바꾼다(제목 안 1~2개 · deck.md §4)
-  for (const e of (opts.emph || [])) { const i = s.indexOf(e); if (i >= 0) { t.setRangeFills(i, i + e.length, fill(opts.emphColor)); if (opts.emphBold) t.setRangeFontName(i, i + e.length, { family: FONT, style: F.bold }); } }
+  for (const e of (opts.emph || [])) { if (!opts.emphColor) break; const i = s.indexOf(e); if (i >= 0) { t.setRangeFills(i, i + e.length, fill(opts.emphColor)); if (opts.emphBold) t.setRangeFontName(i, i + e.length, { family: FONT, style: F.bold }); } }
   return t;
 }
 function rect(parent, x, y, w, h, color, r = 0) { const n = figma.createRectangle(); parent.appendChild(n); n.x = x; n.y = y; n.resize(w, h); n.fills = fill(color); n.cornerRadius = r; return n; }
@@ -63,14 +66,14 @@ function line(parent, x, y, w, color) { return rect(parent, x, y, w, 1, color); 
 // 반환: 부제 아래 y (본문 시작 y로 쓴다. Y_BODY보다 아래면 그 값을 쓴다)
 function chrome(slide, P, o) {
   slide.fills = fill("#ffffff");
-  const ch = text(slide, o.crumbChapter, X0, Y_CRUMB, 22, F.bold, P.ink);
-  text(slide, "  ›  " + (o.crumbSection || ""), X0 + estWidth(o.crumbChapter, 22), Y_CRUMB, 22, F.light, P.mid);
-  line(slide, X0, Y_RULE, CONTENT_W, P.line);
-  const tl = estLines(o.title, 48, CONTENT_W);
-  text(slide, o.title, X0, Y_TITLE, 48, F.bold, P.ink, { width: CONTENT_W, emph: o.emph, emphColor: P.accent, lh: 1.3 });
-  let y = Y_TITLE + tl * 48 * 1.3 + 16;
-  if (o.sub) { text(slide, o.sub, X0, y, 22, F.regular, P.mid, { width: CONTENT_W }); y += estHeight(o.sub, 22, CONTENT_W) + 12; }
-  if (o.page) text(slide, o.page, W / 2 - 40, Y_PAGE, 15, F.light, P.mid, { width: 80, align: "CENTER" });   // 장별 번호 「Ⅱ-3」 — 표지·목차·약어표만 생략
+  const ch = text(slide, o.crumbChapter, X0, Y_CRUMB, T.crumb, F.bold, P.ink, { name: "crumb" });
+  text(slide, "  ›  " + (o.crumbSection || ""), X0 + estWidth(o.crumbChapter, T.crumb), Y_CRUMB, T.crumb, F.light, P.mid, { name: "crumb-sec" });
+  line(slide, X0, Y_RULE, CONTENT_W, P.line).name = "bg-rule";
+  const ts = o.titleSize || T.title, tl = estLines(o.title, ts, CONTENT_W);
+  text(slide, o.title, X0, Y_TITLE, ts, F.bold, P.ink, { width: CONTENT_W, emph: o.emph, emphColor: P.accent, lh: 1.3, name: "title" });
+  let y = Y_TITLE + tl * ts * 1.3 + 16;
+  if (o.sub) { text(slide, o.sub, X0, y, T.sub, F.regular, P.mid, { width: CONTENT_W }); y += estHeight(o.sub, T.sub, CONTENT_W) + 12; }
+  if (o.page) text(slide, o.page, W / 2 - 40, Y_PAGE, T.page, F.light, P.mid, { width: 80, align: "CENTER", name: "page" });   // 장별 번호 「Ⅱ-3」 — 표지·목차·약어표만 생략
   return Math.max(y, Y_BODY);
 }
 
@@ -78,9 +81,9 @@ function chrome(slide, P, o) {
 // 본문 바로 아래(y = 마지막 요소 아래 + 24)에 둔다. y를 안 주면 옛 기본값(바닥 고정) — 본문이 짧은 장에서는 쓰지 않는다.
 function bar(slide, P, s, emph = [], y = Y_BAR) {
   y = Math.min(y, Y_BAR);
-  rect(slide, X0, y, CONTENT_W, 60, P.tint, 6);
-  text(slide, s, X0 + 28, y + 17, 22, F.bold, P.ink, { width: CONTENT_W - 56, emph, emphColor: P.accent });
-  return y + 60;
+  rect(slide, X0, y, CONTENT_W, 64, P.tint, 6).name = "bg-bar";
+  text(slide, s, X0 + 28, y + 14, T.key, F.bold, P.ink, { width: CONTENT_W - 56, emph, emphColor: P.accent, name: "closing" });
+  return y + 64;
 }
 
 // 시그니처·사진 자리: 빈 사각형을 만들고 id를 모아 두면, 스크립트 뒤 `upload_assets(nodeIds, scaleMode)`로 PNG를 채운다(시그니처 FIT · 사진 FILL).
@@ -101,11 +104,26 @@ async function placeSvg(slide, svgString, x, y, width) {
   return n;
 }
 
-// 본문 텍스트 블록(18~20px). 도식 위·아래에 초안 문단을 그대로 놓는다(deck.md §2 — 요약하지 않는다). 반환: 마지막 줄 아래 y.
-function body(slide, P, paragraphs, x, y, width, size = 19) {
+// 화면에 남기는 핵심 문장 1~2개(22px 기준선). 초안 문단 전체는 화면이 아니라 notes()로 보낸다(deck.md §2-2 · 한준 2026-09-05 "글자만 많고 도식이 적다").
+// 문단이 화면에 꼭 있어야 하는 장(회사 소개·서술이 곧 내용인 절)에만 문단을 넣는다. 반환: 마지막 줄 아래 y.
+function body(slide, P, paragraphs, x, y, width, size = T.body) {
   let yy = y;
   for (const p of paragraphs) { text(slide, p, x, yy, size, F.regular, P.soft, { width, lh: 1.5 }); yy += estHeight(p, size, width, 1.5) + 18; }
   return yy;
+}
+
+// 발표자 노트 — 초안 문단·⚠️ 확인필요·「발표에서 건너뜀」 표시가 여기로 간다(마크다운 불릿). 계획의 「초안 문단 번호」 열이 「있음」이 되는 자리.
+function notes(slide, items, skipInTalk = false) {
+  const lines = (skipInTalk ? ["- (발표에서 건너뜀)"] : []).concat(items.map(p => "- " + p));
+  slide.speakerNotes = lines.join("\n");
+}
+
+// 제목 교체 — 계획서의 제목 사슬을 고친 뒤(deck.md §2-1) name "title" 노드의 글만 바꾼다. 장을 다시 만들지 않는다. map: { "슬라이드 이름": "새 제목" }
+async function retitle(map) {
+  await loadFonts();
+  const done = [];
+  for (const s of figma.getSlideGrid().flat()) { const t = map[s.name]; if (!t) continue; const n = s.children.find(c => c.name === "title" && c.type === "TEXT"); if (!n) { done.push(s.name + ": title 없음"); continue; } n.characters = t; done.push(s.name); }
+  return done;
 }
 
 // PART 구분 슬라이드: 옅은 바탕 · 거대 로마숫자 · 강조 세로선 · 장 제목 · 절 목록. 쪽번호는 장 첫 번호(예 Ⅱ-1).
@@ -114,7 +132,7 @@ function part(slide, P, o) {
   text(slide, o.roman, 1100, 120, 420, F.black, "#e4e8ee");
   rect(slide, X0, 380, 6, 220, P.accent);
   text(slide, "PART " + o.roman, X0 + 40, 380, 24, F.bold, P.accent);
-  text(slide, o.title, X0 + 40, 430, 76, F.bold, P.ink, { width: 1200 });
+  text(slide, o.title, X0 + 40, 430, T.part, F.bold, P.ink, { width: 1200, name: "title" });
   let y = 560; for (const s of (o.sections || [])) { text(slide, s, X0 + 40, y, 24, F.regular, P.soft); y += 40; }
   if (o.page) text(slide, o.page, W / 2 - 40, Y_PAGE, 15, F.light, P.mid, { width: 80, align: "CENTER" });
 }

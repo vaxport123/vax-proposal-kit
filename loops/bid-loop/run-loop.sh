@@ -3,11 +3,12 @@
 # cron 이 이 스크립트를 매시 정각에 부른다. 시간대·중복실행·예산·로그를 여기서 통제한다.
 #
 #   crontab -e
-#   0 * * * * /Users/vax/bids-project/run-loop.sh 몽골유적
+#   0 * * * * /path/to/vax-proposal-kit/loops/bid-loop/run-loop.sh 몽골유적
 #
 set -uo pipefail
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# bids/ 와 logs/ 가 있는 저장소 루트. 이 스크립트는 loops/bid-loop/ 에 있으므로 두 단계 위다(스크립트 폴더 기준이면 loops/bid-loop/bids/ 를 찾아 늘 「현황조회」가 된다). 다른 곳에 복사해 쓰면 PROJECT_DIR 로 넘긴다.
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 CLAUDE_BIN="${CLAUDE_BIN:-$(command -v claude || echo /usr/local/bin/claude)}"
 TARGET="${1:-}"
 

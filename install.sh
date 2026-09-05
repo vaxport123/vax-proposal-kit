@@ -35,7 +35,11 @@ hdr(){ printf '\n▶ %s\n' "$*"; }
 # 스킬 레포에서 SKILL.md가 든 디렉터리를 찾아 대상 스킬 폴더로 복사
 copy_skill_dir(){ # $1=repo_root  $2=dest_name
   local repo="$1" name="$2" src
-  src="$(dirname "$(find "$repo" -name SKILL.md -not -path '*/node_modules/*' | head -n1)")" || true
+  # 이름이 같은 폴더(skills/<name>/SKILL.md 등)를 먼저 고른다. vax-wiki-gateway처럼 SKILL.md가 여럿인 저장소에서 첫 것을 집으면 딴 스킬이 그 이름으로 깔린다(2026-09-05 리뷰).
+  src="$(dirname "$(find "$repo" -path "*/$name/SKILL.md" -not -path '*/node_modules/*' -not -path '*/.tmp*' | head -n1)")" || true
+  if [ -z "${src:-}" ] || [ "$src" = "." ] || [ ! -d "$src" ]; then
+    src="$(dirname "$(find "$repo" -name SKILL.md -not -path '*/node_modules/*' -not -path '*/.tmp*' -not -path '*/.claude/*' | head -n1)")" || true
+  fi
   if [ -z "${src:-}" ] || [ ! -d "$src" ]; then
     log "⚠ SKILL.md를 못 찾음 — 수동 확인 필요: $repo"; return 1
   fi
@@ -126,6 +130,14 @@ if [ "$HAS_CLAUDE" = 1 ] && ls "$DIR"/agents/*.md >/dev/null 2>&1; then
     if [ -f "$HOME/.claude/agents/$b" ] && [ "$FORCE" = 0 ]; then log "· 이미 있음(스킵): $b"; continue; fi
     cp "$f" "$HOME/.claude/agents/$b"; log "✓ 설치: ~/.claude/agents/$b"
   done
+fi
+
+# /bid-loop 명령 — loops/bid-loop/bid-loop.md 를 ~/.claude/commands/ 로 복사한다(이게 없으면 SKILL.md가 말하는 「/bid-loop 사업폴더」가 없는 명령이다 · 2026-09-05 리뷰).
+if [ "$HAS_CLAUDE" = 1 ] && [ -f "$DIR/loops/bid-loop/bid-loop.md" ]; then
+  hdr "commands  (~/.claude/commands/bid-loop.md)"
+  mkdir -p "$HOME/.claude/commands"
+  if [ -f "$HOME/.claude/commands/bid-loop.md" ] && [ "$FORCE" = 0 ]; then log "· 이미 있음(스킵): bid-loop.md"
+  else cp "$DIR/loops/bid-loop/bid-loop.md" "$HOME/.claude/commands/bid-loop.md"; log "✓ 설치: ~/.claude/commands/bid-loop.md"; fi
 fi
 
 # 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/deck.md §4).

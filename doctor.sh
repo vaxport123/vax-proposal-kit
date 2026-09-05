@@ -15,6 +15,8 @@ if [ -f "$HOME/.claude/skills/vax-proposal/SKILL.md" ]; then
   if diff -q "$HOME/.claude/skills/vax-proposal/SKILL.md" "$DIR/skills/vax-proposal/SKILL.md" >/dev/null 2>&1; then ok "vax-proposal 설치됨 · 저장소와 같은 버전"
   else bad "vax-proposal 설치본이 저장소와 다르다 → bash install.sh --force"; fi
 else bad "vax-proposal 미설치 → bash install.sh"; fi
+[ -f "$HOME/.claude/agents/proposal-critic.md" ] && ok "비판자 proposal-critic 설치됨" || bad "비판자 proposal-critic 미설치 → bash install.sh --force"
+[ -f "$HOME/.claude/commands/bid-loop.md" ] && ok "/bid-loop 명령 설치됨" || info "/bid-loop 명령 없음(루프형만 필요) — bash install.sh --force"
 for s in deep-research humanizer; do
   [ -d "$HOME/.claude/skills/$s" ] && ok "$s 설치됨" || info "$s 없음(선택) — install.sh 가 깐다"
 done

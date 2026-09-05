@@ -15,4 +15,4 @@
 - `proposal-review.loop.md` — 초안의 ⚠️ 확인필요가 0이 될 때까지 담당자에게 빈칸을 묻고 채운다.
 - `figma-sync.md` — Figma에서 고친 문장을 노션 초안에도 반영해 사본을 맞춘다.
 
-비어 있는 상태로 시작한다. 대표가 만든 파일을 그대로 넣으면 된다.
+지금 들어 있는 것: `bid-loop/`(슬래시 커맨드형 · P0~P6 상태 기계 · `run-loop.sh` 야간 래퍼). `install.sh`가 `bid-loop.md`를 `~/.claude/commands/`로 복사한다.
