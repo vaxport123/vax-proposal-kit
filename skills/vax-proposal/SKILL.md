@@ -113,7 +113,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 슬라이드 덱은 PART(행
 - `references/review-rubric.md` — **채점**: P5 페르소나 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
 - `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
-- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(Slides 헬퍼 + `validate`) · `ui_tokens.py`(디자인 정본 사본)
+- `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(Slides 프리미티브 + 그림 프리미티브 + `validate`) · `figma_slides_diagrams.js`(그림 레시피 10종 — 동선 지도·연결도·스토리보드·판·교실 배치도·공정도·층도·반경 지도·와이어프레임·타임라인 + `fitTable`·`restackColumns`) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)
 - `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A9 · 디자인 B1~B10, B군은 경향 지적). `install.sh`가 `~/.claude/agents/`에 복사한다
 - `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md` · `run-loop.sh` · `settings.json`

@@ -122,7 +122,8 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     proposal_lint.py            ★ 초안·계획 정규식 검사 L1~L12 · P1~P6(번역투·빈 수사·40자·리듬·표·출처·브리프·제목 사슬·연속 유형·대응표) — LLM 없음 · 「상」은 RFP 관련만
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
     figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)
-    img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 헬퍼(좌표는 기본값)
+    img_fetch.py · figma_slides_helpers.js   사진 받기 + MANIFEST · Figma Slides 헬퍼(프리미티브 + 그림 프리미티브 + validate)
+    figma_slides_diagrams.js      ★ 그림 레시피 10종(동선 지도·연결도·스토리보드·판·배치도·공정도·층도·반경 지도·와이어프레임·타임라인) + 표 채우기·열 재적재 — 순천 v5에서 실제로 그린 것
     ui_tokens.py                  디자인 정본 사본 (서버 ops/ui_tokens.py ← sync_tokens.sh)
 
 server/                         서버에 두는 것의 초안·명세 (직원 PC에 설치되지 않음)

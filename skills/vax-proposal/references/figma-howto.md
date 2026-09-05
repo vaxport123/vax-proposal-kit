@@ -40,7 +40,8 @@
   로고 파일과 hex는 `bids/<사업>/ci/`에 두고 `_STATE.md`에 적는다. 예: 한국청년기업가정신재단 `#1b4fc4` · 한국자살예방협회 `#e8202a` · KITECH `#0047bb` · 국립순천대 `#0068B0`.
 - 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
 
-## 그림 그리기 (2026-09-05 도식 6장 실측)
+## 그림 그리기 (2026-09-05 도식 10장 실측)
+- 레시피는 `scripts/figma_slides_diagrams.js`에 있다(헬퍼 다음에 붙인다): `routeMap` 동선 지도 · `systemConnect` 연결도 · `storyboard` 스토리보드 · `pictoPanels` 판 셋 · `roomPlan` 교실 배치도 · `processStrip` 공정도+사진 · `layerDiagram` 층도 · `radiusMap` 반경 지도 · `wireframeVR` 와이어프레임 · `approvalTimeline` 타임라인. 좌표·개수는 인자로 바꾼다. 표 장은 `fitTable`, 단계·카드 장은 `restackColumns`.
 - 벡터(`createVector`)는 `vectorPaths`를 넣은 뒤 **x·y를 경로 최소점으로 다시 놓는다.** 안 놓으면 (0,0)으로 튄다. 헬퍼 `arrow`·`curvePath`가 처리한다.
 - 곡선 경로는 정거장 원 **아래 층**에 둔다: `slide.insertChild(구역 띠 다음 index, path)`.
 - 텍스트 속성(정렬·글자)을 바꿀 때도 그 글꼴을 `loadFontAsync`해야 한다(안 하면 「unloaded font」).
