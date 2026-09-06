@@ -181,3 +181,12 @@ function evidenceCheck(opts = {}) {
 function leftovers(pattern = /근거:|⚠️|확인필요|재료 팩|덩이|제목 사슬|색채 카드|걷는 점/) {
   return figma.root.findAllWithCriteria({ types: ["TEXT"] }).filter(t => pattern.test(t.characters)).map(t => `${t.parent && t.parent.name}: ${t.characters.slice(0, 40)}`);
 }
+
+// 재개용 스냅샷(토큰이 끊기기 전에 상태 파일을 채운다) — 현재 페이지의 슬라이드를 「장 이름 · 노드 id · 자식 수」 마크다운 표로 돌려준다.
+// 이 문자열을 _BUILD_STATE.md 의 「장별 노드 ID」 표에 그대로 붙이면, 다음 세션이 어느 장까지 만들었는지 id로 바로 찾는다.
+// 새로 만든 Slides 파일에서는 getSlideGrid()가 빈 배열이라(figma-howto.md 실측) currentPage 를 직접 훑는다.
+function snapshotIds() {
+  const slides = figma.currentPage.findAllWithCriteria({ types: ["SLIDE"] });
+  const rows = slides.map(s => `| ${s.name} | \`${s.id}\` | ${s.children.length} |`);
+  return ["| 장(이름) | 노드 ID | 자식 수 |", "|---|---|---|"].concat(rows).join("\n");
+}

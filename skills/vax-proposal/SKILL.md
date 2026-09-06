@@ -20,6 +20,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 - **대화형**: 게이트마다 결과를 보여 주고 동의를 받으며 진행한다.
 - **루프형(`/bid-loop`)**: `loops/bid-loop/bid-loop.md`의 운행 규칙대로 **1회 호출 = 1스텝**. 첫 동작은 `_STATE.md` 읽기, 끝나면 갱신 후 즉시 종료.
   헤드리스에서는 묻지 않고 `차단사항`에 적고 끝낸다. 이 파일은 단계의 **내용**을, bid-loop.md는 **운행**을 맡는다.
+  단계는 P0~P7이다. 마지막 **P7(마감)**은 사업이 끝난(낙찰·유찰) 뒤 배운 것을 위키에 올리는 단계다 — `bid-loop.md`의 단계 표에도 P7 행이 있어야 한다.
 
 ## 절차 (순서를 바꾸지 않는다)
 
@@ -27,6 +28,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 1. 공고번호로 Notion 입찰레이더의 공고 페이지를 찾고 자식 페이지 **「📦 제안 재료 팩」**과 **「📄 RFP 원문(추출)」**을 읽는다(`notion-search` → `notion-fetch`).
    두 페이지의 「판본:」 도장이 같아야 한다. 원문은 `00_RFP원문_추출.md`로 저장해 다음 스텝에서 다시 읽지 않는다.
 2. 재료 팩이 없으면 멈추고 알린다. **재료 없이 초안을 쓰지 않는다.** 사용자가 본문을 붙여넣으면 그것을 쓴다.
+   위키에 팩이 아직 없으면 `references/material-pack.template.md`(빈 서식)를 사람이 채워 붙여넣는다. 열 개 절을 다 채우기 전에는 P1로 가지 않는다.
 3. `material-pack.md`의 H2 열 개(0~9)가 다 있는지 본다. 빠진 항목은 `⚠️ 확인필요`로 다룬다.
 4. 사업 폴더 `bids/{사업명}/`을 만들고 `loops/bid-loop/_STATE.template.md`를 `_STATE.md`로 복사한다.
 
@@ -82,6 +84,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 80점은 합격선이 아니라 **착수선**이다.
 
 ### P6 · 고스트 덱 → Figma
+**Figma 제작은 한 장에 한 호출. 장 하나가 끝나면 `bids/{사업명}/_BUILD_STATE.md`(템플릿을 복사)를 갱신한다. 토큰이 끊기면(30분마다) 그 상태 파일부터 읽고 이어 간다.** 장별 노드 ID 표는 `snapshotIds()`로 채운다(`figma-howto.md`).
 `deck.md`를 따른다. 2026-09-06에 순서를 뒤집었다 — 문단을 슬라이드에 배치하는 방식은 지웠다(문서를 덱으로 바꾸면 문서 같은 덱이 나온다). 장 하나 = **액션 타이틀 한 문장 + 증거 하나**.
 ⓪ **재료 게이트**(`deck.md` §0) → `06_재료점검.md`: 심사위원이 내릴 결정 한 문장 · 반대 셋 · 발주처 현장 사진 6 · 우리 실물 6 · 출처 있는 숫자 5 · 색채 카드 8. 빈 칸이면 **덱을 만들지 않고 재료 요청서를 낸다**(누가 무엇을 구해야 하나).
 ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬(액션 타이틀 — 발주처가 얻는 것이 문장 안에, 앞 제목을 받고, 붙여 읽어 한 글, 발표자가 입으로 말하는 문형) → ③ **고스트 덱 표**(장 · 쪽번호 · 액션 타이틀 · 증거 유형 · 증거 출처 · 사진 · 노트) → ④ RFP 요구 ID 대응표 · 반대 의견 대응표 → ⑤ 리듬 점검(PART마다 사진·큰 숫자·지도/연결도 1 이상, 표는 절반 이하) → ⑥ 디자인 브리프 → `07_슬라이드계획_v1.md`
@@ -91,6 +94,23 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 헤드리스(`claude -p`)에서는 Figma MCP가 붙지 않는다. ⑨ 이후는 사람이 앉은 세션에서 한다.
 HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md`(문서용 fig 도식은 여기서 그려진다 · 공개 금지 정보가 있으면 렌더 거부).
 Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직·실적 장은 `../../templates/company-intro/` 마스터 v3의 「PROOF — 근거 한 줄」 표기를 참고한다.
+
+### P7 · 마감 — 배운 것을 위키에 올린다 → 「레퍼런스 색인」
+사업이 끝나면(낙찰·유찰 상관없이) 이번에 만든 재사용 자산을 노션 「레퍼런스 색인」(https://app.notion.com/p/3d16394f4c9981b493e3d4b5dc7884a9)에 올린다.
+**bids 폴더는 각자 PC에만 있어 공유되지 않는다. 회사 사실은 위키가 정본이다.** 안 올리면 다음 사람이 같은 조사를 처음부터 다시 한다.
+
+올리는 것(요약해서 — 원고 전체가 아니라 다음에 재활용할 조각만):
+- **페인포인트**(`03a_페인포인트.md`): 「기관 유형 + 과업 유형」에서 통한 관찰 3~5줄. 어느 배점 항목에 닿았는지 한 줄씩.
+- **색채 카드와 이름**(`03b_방향전략.md`): 이 공고에 붙은 우리 자산 카드와 「경쟁사가 못 쓰는 이유」, 채택한 컨셉 이름과 후보 셋.
+- **틀 선택**(`07_슬라이드계획`): 증거 유형 → 고른 틀(L01~L14)이 실제로 통했는지. 안 통한 틀은 왜.
+- **비판자 로그 요약**(`logs/검토*.md`): 반복해 걸린 AI 티·디자인 지적 몇 줄. 다음 사업이 같은 데서 안 걸리게.
+
+올리지 않는 것:
+- 제안서 원고 전체·심사 결과 상세(발주처에 낸 문서는 bids 폴더에 둔다).
+- 임직원·담당자·이용자 **개인 이름**(색인은 여러 사람이 본다).
+- 특정 발주처를 깎는 비판(「이 기관은 …」). 배운 요령만 남기고 대상은 일반화한다.
+
+체크리스트: ☐ 페인포인트 요약 ☐ 색채 카드·이름 ☐ 틀 선택 결과 ☐ 비판자 요약 ☐ 개인 이름·발주처 비판 뺐나 ☐ `_STATE.md` 상태를 `완료`로.
 
 ### 스텝 종료 시 항상 (루프형)
 `_STATE.md` 갱신(현재단계·다음행동·진행중:false·마지막갱신) → `logs/`에 1~5줄 → 사용자에게 3줄 보고 [완료한 것] [다음 스텝] [사람이 처리할 차단사항] → 종료.
@@ -114,10 +134,11 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직�
 - `references/deck.md` — **덱**: 재료 게이트 · RFP 규칙 우선 · 고스트 덱(액션 타이틀 + 증거 하나 · 대응표 · 리듬) · 문서용 fig 도식 · 고정 여섯 가지 · 레이아웃은 고른다 · 증거 검사
 - `references/review-rubric.md` — **채점**: P5 페르소나 · 감점 먼저 · 근거 인용 의무 · 반복 감점 패턴
 - `references/layouts.md` · `layouts.json` — **틀**: 회사 손 덱 118장에서 잰 하우스 문법과 틀 14종(정본 JSON → 와이어프레임 PNG · JS 좌표)
-- `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
+- `references/material-pack.md`(서버와 공유하는 계약) · `material-pack.template.md`(팩이 위키에 없을 때 사람이 채우는 빈 서식) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
-- `scripts/probe_web.py`(발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색 · 숫자 문장 · 공식 데이터 링크 · 발상 자극 카드 → `03a_raw.md`, `--selftest` 오프라인) · `requirements.txt`(ddgs·requests·bs4·pillow)
+- `scripts/probe_web.py`(발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색 · 숫자 문장 · 공식 데이터 링크 · 발상 자극 카드 → `03a_raw.md`, `--selftest` 오프라인 · `--dry-run` 검색어만 · 결과 0건이면 지역 바꿔 1회 재시도 후 종료코드 2) · `requirements.txt`(ddgs·requests·bs4·pillow)
 - `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(프리미티브 · header/actionTitle · notes/retitle · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`) · `figma_slides_diagrams.js`(증거 레시피 넷 — 동선 지도·연결도·배치도·타임라인 + `fitTable`) · `figma_slides_layouts.js`(하우스 틀 14종 `houseChrome`·`applyLayout`·`layoutFor` — 좌표는 `references/layouts.json`에서 `layout_wireframes.py`가 찍어 넣는다) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)
 - `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A9 · 디자인 B1~B10, B군은 경향 지적). `install.sh`가 `~/.claude/agents/`에 복사한다
-- `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md` · `run-loop.sh` · `settings.json`
+- `../../loops/bid-loop/` — /bid-loop 운행 규칙 · `_STATE.template.md`(사업 상태 기계) · `_BUILD_STATE.template.md`(P6 Figma 제작 재개 파일 — 파일 키·장별 노드 ID·다음 재개 지점) · `run-loop.sh` · `settings.json`
+- 저장소 루트(다른 파일이 만든다 · 이름만): `START.md`(첫 실행 순서·커넥터 점검) · `CHANGELOG.md`(판올림 기록) · `scripts/repo_guard.py`(공개 범위 검사 — 공고번호·금액·실명·발주처명이 새어 나갔는지) · `docs/ROADMAP.md`(다음 할 일)

@@ -16,6 +16,13 @@
 """
 import argparse, datetime, io, json, os, re, sys, time
 
+# 윈도우 콘솔은 기본 코드페이지가 cp949라 한글 출력이 깨질 수 있다. utf-8로 다시 연다(안 되면 그냥 둔다).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 UA = "Mozilla/5.0 (vax-proposal-kit probe_web; +https://github.com/vaxport123/vax-proposal-kit)"
 UNIT = r"(명|개|억|만|천|%|퍼센트|년|회|대|곳|시간|분|초|km|㎡|m²|평|편|종|건|층|호|위|배|점|원|주|일)"
 NUM_SENT = re.compile(r"[^.。!?\n]*\d[\d,\.]*\s*" + UNIT + r"[^.。!?\n]*[.。!?]?")
@@ -79,6 +86,22 @@ def build_queries(org, kw, prev=""):
                 qs.append(q)
         out[src] = qs
     return out
+
+
+def count_urls(hits):
+    return sum(len([h for h in v if "url" in h]) for v in hits.values())
+
+
+def dryrun_text(queries):
+    # --dry-run: 실제 검색은 하지 않고 어떤 검색어로 돌 것인지만 보여 준다.
+    L = ["# 검색어 미리보기 (--dry-run · 실제 검색 안 함)", ""]
+    for src, qs in queries.items():
+        L.append(f"## {src}")
+        for q in qs:
+            L.append(f"- {q}")
+        L.append("")
+    L.append("검색어 %d개. 실제로 돌리려면 --dry-run 을 빼고 --out 을 넣는다." % sum(len(v) for v in queries.values()))
+    return "\n".join(L)
 
 
 def number_sentences(text, limit=15):
@@ -186,7 +209,8 @@ def render(org, kw, prev, otype, queries, hits, numbers, fetched):
         if not good:
             L.append("- (결과 없음 — 검색어를 바꿔 다시)")
         for h in good[:10]:
-            d = f" ({h['date']})" if h.get("date") else ""
+            # 뉴스 날짜는 검색엔진이 준 값이라 부정확할 수 있다. 그대로 믿지 말고 원문에서 확인하라고 붙인다.
+            d = f" ({h['date']} · 검색엔진 값, 원문에서 확인)" if h.get("date") else ""
             L.append(f"- [{h['title'][:70]}]({h['url']}){d} — {h['snippet']}")
         L.append("")
     L += ["## 2. 숫자 후보 (페이지에서 뽑은 문장 — 원 페이지에서 확인한 뒤에만 쓴다)", "| 문장 | 출처 |", "|---|---|"]
@@ -231,9 +255,16 @@ def selftest():
     if len(ns) < 2 or any("로그인" in s for s in ns): fails.append("숫자 문장 추출 " + str(ns))
     if "○○ 기자" not in strip_person_names("홍길동 기자가 썼다"): fails.append("이름 가림")
     hits = {"홈페이지·조직": [{"q": "a", "title": "t", "url": "https://x", "snippet": "s"}]}
+    if count_urls(hits) != 1: fails.append("count_urls")
+    if count_urls({"a": [{"q": "x", "error": "e"}]}) != 0: fails.append("count_urls 0건")
+    dt = dryrun_text(q)
+    for must in ["--dry-run", "홈페이지·조직", "예시대학교 조직도"]:
+        if must not in dt: fails.append("dry-run " + must)
     md = render("예시대학교", "실감콘텐츠", "", "대학", q, hits, [{"sent": "관람객 60%", "url": "https://x", "title": "t", "src": "홈페이지·조직"}], False)
     for must in ["## 0.", "## 3.", "⑤ 숫자", "→ 후보 1", "대학알리미"]:
         if must not in md: fails.append("서식 " + must)
+    md_news = render("예시대학교", "실감콘텐츠", "", "대학", q, {"뉴스(최근)": [{"q": "a", "title": "t", "url": "https://n", "snippet": "s", "date": "2026-01-02"}]}, [], False)
+    if "검색엔진 값, 원문에서 확인" not in md_news: fails.append("뉴스 날짜 표시")
     print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — 검색어 %d개 · 숫자 문장 %d · 서식 · 이름 가림" % (sum(len(v) for v in q.values()), len(ns)))
     return 1 if fails else 0
 
@@ -243,15 +274,32 @@ def main():
     ap.add_argument("--org"); ap.add_argument("--kw"); ap.add_argument("--prev", default="")
     ap.add_argument("--type", default="기타", choices=list(OFFICIAL.keys())); ap.add_argument("--out"); ap.add_argument("--max", type=int, default=5)
     ap.add_argument("--fetch", action="store_true"); ap.add_argument("--news", action="store_true"); ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--dry-run", action="store_true", help="검색어만 출력하고 종료(실제 검색 안 함)")
     a = ap.parse_args()
     if a.selftest:
         sys.exit(selftest())
-    if not (a.org and a.kw and a.out):
-        ap.error("--org --kw --out 이 필요하다 (또는 --selftest)")
+    if not (a.org and a.kw):
+        ap.error("--org --kw 가 필요하다 (또는 --selftest · --dry-run)")
     queries = build_queries(a.org, a.kw, a.prev)
+    if a.dry_run:
+        print(dryrun_text(queries))
+        sys.exit(0)
+    if not a.out:
+        ap.error("--out 이 필요하다 (검색어만 보려면 --dry-run)")
     print("검색어 %d개 …" % sum(len(v) for v in queries.values()), file=sys.stderr)
     KW_GLOBAL.append(a.kw)
     hits = search(queries, max_results=a.max, news=a.news)
+    if count_urls(hits) == 0:
+        # 첫 시도가 전부 0건이면 지역을 한국(kr-kr)에서 전세계(wt-wt)로 바꿔 한 번만 다시.
+        print("결과 0건 — 지역을 wt-wt 로 바꿔 한 번 더 …", file=sys.stderr)
+        hits = search(queries, max_results=a.max, news=a.news, region="wt-wt")
+    if count_urls(hits) == 0:
+        sys.stderr.write(
+            "검색 결과가 하나도 없습니다. 원인 후보 셋:\n"
+            "  1) 네트워크 — 인터넷 연결·프록시·방화벽을 확인하세요.\n"
+            "  2) 검색엔진 차단 — DuckDuckGo 가 잠시 요청을 막았을 수 있습니다. 몇 분 뒤 다시.\n"
+            "  3) 검색어 — --kw(RFP 배경의 고유명사)·--prev(전년도 사업명 정확히)를 바꿔 다시.\n")
+        sys.exit(2)
     numbers = fetch_numbers(hits) if a.fetch else []
     md = render(a.org, a.kw, a.prev, a.type, queries, hits, numbers, a.fetch)
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
