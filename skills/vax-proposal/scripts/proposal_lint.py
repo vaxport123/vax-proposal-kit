@@ -18,8 +18,9 @@
   구조  L8 문두 접속사·담화표지·되풀이 결론
   형식  L9 마크다운 표(fig 블록으로 바꿔야) · L10 출처 번호 [n]·03a 파일 · L11 공개 금지·내부 표기 · L12 fig JSON 깨짐
   L13 내부 조어(덩이·색채 카드·걷는 점·제목 사슬·레이아웃 가족·그 셋/넷) — 화면·본문에 새면 「중」
-  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 증거 유형 연속 3장 · P4 고스트 덱 표(증거 유형·증거 출처 열, 증거 빈칸) · P5 RFP 대응표 빈칸 · P7 재료 점검 절 · P8 반대 의견 대응표
-  게이트(상)는 RFP·증거 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · P5 대응표 빈칸 · P4 증거 열 없음/증거 빈칸 · P7 재료 점검 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
+  L14 페인포인트(03a)의 출처(재료 파일·검색엔진을 출처로 적었거나 출처 열이 비었거나 없으면 「상」 · writing.md §2)
+  계획  P1 디자인 브리프 · P2 제목 사슬(명사형·가리키기·40자) · P3 같은 증거 유형 연속 3장 · P4 고스트 덱 표(증거 유형·증거 출처 열, 증거 빈칸) · P5 RFP 대응표 빈칸 · P7 재료 점검 절 · P8 반대 의견 대응표 · P9 승인 절(승인자·일시·고스트 덱 승인)
+  게이트(상)는 RFP·증거 관련(L4 금지 표현 · L11 공개 금지 · L12 fig 깨짐 · L14 페인포인트 출처 · P5 대응표 빈칸 · P4 증거 열 없음/증거 빈칸 · P7 재료 점검 없음 · P9 승인 없음)만. 디자인 항목(P1·P3)은 「중」 — 경향 조절용(한준 2026-09-05 "하드게이트로 하면 글 문서가 된다")
 """
 import argparse
 import json
@@ -236,6 +237,24 @@ def lint_text(md, path=""):
     if not re.search(r"확인필요 목록", md):
         add(0, "하", "L10", "「확인필요 목록」 절이 없다 — ⚠️ 확인필요를 끝에 모아야 담당자가 채운다")
 
+    # L14 재료 파일을 출처로 적은 페인포인트(03a) — 웹에서 긁어 온 재료를 확인 없이 사실로 옮기는 실수
+    if path and "페인포인트" in os.path.basename(path):
+        BADSRC = re.compile(r"03a_raw|duckduckgo|ddgs|검색\s*결과|검색결과", re.I)
+        src_seen = False
+        for tln, head, rows in _tables(md):
+            si = _col(head, "출처")
+            if si is None:
+                continue
+            src_seen = True
+            for r_i, r in enumerate(rows):
+                cell = _strip_md(r[si]).strip() if si < len(r) else ""
+                if not cell or cell in ("-", "—"):
+                    add(tln + 2 + r_i, "상", "L14", "발주처 사실에 출처가 비었다 — 원 페이지 주소와 날짜를 적는다(writing.md §2). 재료(03a_raw)는 출처가 아니다")
+                elif BADSRC.search(cell):
+                    add(tln + 2 + r_i, "상", "L14", "출처에 재료 파일·검색엔진(%s)이 적혔다 — 그 페이지를 열어 확인한 원 주소·날짜로 바꾼다(writing.md §2)" % cell[:30], cell)
+        if not src_seen:
+            add(0, "상", "L14", "페인포인트 표에 「출처」 열이 없다 — 발주처 사실마다 원 페이지 주소·날짜 열이 있어야 한다(writing.md §2)")
+
     # L11 공개 금지 · 내부 표기 수
     if render_html is not None:
         for why in render_html.check_forbidden(md):
@@ -394,6 +413,23 @@ def lint_plan(md, path=""):
         empty = [ln + 2 + i for i, r in enumerate(rows) if si >= len(r) or not r[si].strip() or r[si].strip() in ("-", "—", "")]
         if empty:
             add(empty[0], "상", "P5", "대응 슬라이드가 빈 요구 항목 %d개(줄 %s) — 장을 추가하거나 「해당사항 없음」 장에" % (len(empty), ",".join(map(str, empty[:8]))))
+    # P9 승인 절 — 고스트 덱은 사람 승인 뒤에만 Figma로 간다(deck.md §2-6)
+    # 제목이 「승인」으로 시작하는 절만 본다(「고스트 덱(…승인되기 전에는…)」 같은 제목은 아니다)
+    m = re.search(r"^#+\s*승인", md, re.M)
+    if not m:
+        add(0, "상", "P9", "「승인」 절이 없다(deck.md §2-6) — 승인자·일시·「고스트 덱 승인」 문구가 있어야 P6-시안으로 간다")
+    else:
+        start = m.end()
+        nxt = re.search(r"^#+ ", md[start:], re.M)
+        sec = md[start:start + nxt.start()] if nxt else md[start:]
+        line_no = md[:m.start()].count("\n") + 1
+        if "고스트 덱 승인" not in sec:
+            add(line_no, "상", "P9", "승인 절에 「고스트 덱 승인」 문구가 없다 — 무엇을 승인했는지 한 줄로 남긴다")
+        if not re.search(r"승인자", sec):
+            add(line_no, "상", "P9", "승인 절에 승인자가 없다 — 승인한 사람을 적는다")
+        if not re.search(r"일시|날짜|\d{4}-\d{2}-\d{2}", sec):
+            add(line_no, "상", "P9", "승인 절에 일시가 없다 — 승인 날짜를 적는다")
+
     # 목차 쪽번호
     for ln, kind, line in _blocks(md):
         if kind in ("text", "table") and "목차" in line and re.search(r"[Pp]\.\s*\d|\d+\s*~\s*\d+\s*(쪽|p)", line):
@@ -443,7 +479,7 @@ def selftest():
     ok("L12 fig 깨짐", "L12" in codes(F))
     ok("L10 출처 없음", "L10" in codes(F))
     ok("L13 내부 조어", "L13" in codes(lint_text("# a\n\n시스템 네 덩이가 다 있어야 합니다. 그 셋은 실적입니다.\n")))
-    good = ("# Ⅰ. 제안개요\n\n순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다[1]. 2025년 3월에 문을 열었습니다.\n\n"
+    good = ("# Ⅰ. 제안개요\n\n전시관에는 지금 다시 보여 줄 장면이 없습니다[1]. 2025년 3월에 문을 열었습니다.\n\n"
             "```fig\n{\"type\": \"stats\", \"items\": [{\"n\": \"3층\", \"label\": \"강의실\"}]}\n```\n\n## 확인필요 목록\n- 없음\n")
     G = lint_text(good)
     ok("좋은 글은 상·중 없음", not any(f["sev"] in ("상", "중") for f in G))
@@ -457,7 +493,7 @@ def selftest():
     ok("L5 첫 문단 40자", any(f["code"] == "L5" and f["sev"] == "중" for f in lint_text(longf)))
     ok("공개 금지(상)", render_html is None or any(f["code"] == "L11" and f["sev"] == "상" for f in lint_text("# a\n\n서버는 100.64.0.1 입니다.\n")))
     plan_bad = ("# 계획\n\n## 제목 사슬\n1. 사업 개요\n2. 추진 전략\n\n| 장 | 제목 | 유형 | 문단 |\n|---|---|---|---|\n| 1 | 사업 개요 | 카드 | 1 |\n| 2 | 추진 전략 | 카드 | 2 |\n| 3 | 기대 효과 | 카드 | 4 |\n")
-    plan_bad2 = ("# 계획\n\n## 재료 점검\n- 결정: x\n\n## 제목 사슬\n1. 캠퍼스는 한 층이 아니라 5분 거리입니다\n\n| 장 | 액션 타이틀 | 증거 유형 | 증거 출처 |\n|---|---|---|---|\n| 1 | 캠퍼스는 한 층이 아니라 5분 거리입니다 | | |\n| 2 | 장비는 9품목 다 맞춥니다 | 표 | 재료 팩 §3 |\n| 3 | 일정은 13주입니다 | 표 | 재료 팩 §3 |\n| 4 | 검수는 교실에서 합니다 | 표 | 03a #2 |\n")
+    plan_bad2 = ("# 계획\n\n## 재료 점검\n- 결정: x\n\n## 제목 사슬\n1. 전시관은 한 곳이 아니라 세 곳입니다\n\n| 장 | 액션 타이틀 | 증거 유형 | 증거 출처 |\n|---|---|---|---|\n| 1 | 전시관은 한 곳이 아니라 세 곳입니다 | | |\n| 2 | 장비는 6품목 다 맞춥니다 | 표 | 재료 팩 §3 |\n| 3 | 일정은 13주입니다 | 표 | 재료 팩 §3 |\n| 4 | 검수는 전시관에서 합니다 | 표 | 03a #2 |\n")
     P = lint_plan(plan_bad)
     ok("P1 브리프 없음", "P1" in codes(P))
     ok("P2 명사형 제목", "P2" in codes(P))
@@ -469,13 +505,27 @@ def selftest():
     ok("P5 대응표 없음", "P5" in codes(P))
     plan_good = ("# 계획\n\n## 재료 점검\n- 결정: 협상 1순위\n- 반대 셋: a→3 b→4 c→2\n\n## 디자인 브리프\n- 시각 컨셉: 강의실에서 골목으로 걸어 나가는 동선\n- 팔레트: #0068B0 · 진한 · 옅은\n- 글자 단계: 48/22/19/13\n"
                  "- 레이아웃 가족: 전면 사진 / 좌 도식 / 표 전폭\n- 여백 장: Ⅰ-2 · Ⅱ-5\n- 헤더 좌표: x96 y48\n\n## 제목 사슬\n"
-                 "1. 순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다\n2. 그런데 캠퍼스는 한 층이 아니라 5분 거리 전체입니다\n3. 그래서 실측 공간을 만듭니다\n4. 장비는 9품목 전부 맞춥니다\n5. 13주에 검수합니다\n\n"
-                 "| 장 | 쪽번호 | 액션 타이틀 | 증거 유형 | 증거 출처 | 사진 | 노트 |\n|---|---|---|---|---|---|---|\n| 1 | — | 표지 | 사진 | MANIFEST 1 | 외관 | — |\n| 2 | Ⅰ-1 | 순천캠퍼스에는 지금 보여 줄 캠퍼스가 없습니다 | 사진 | MANIFEST 2 | 간판 | 1-2 |\n| 3 | Ⅰ-2 | 그런데 캠퍼스는 5분 거리 전체입니다 | 큰 숫자 | 03a #1 | — | 3 |\n| 4 | Ⅰ-3 | 그래서 실측 공간을 만듭니다 | 지도 | 03b 카드 2 | — | 4-5 |\n\n## 반대 의견 대응표\n| 반대 | 답하는 장 |\n|---|---|\n| a | 3 |\n\n"
-                 "## RFP 요구 대응표\n| 요구 ID | 대응 슬라이드 |\n|---|---|\n| 기획-001 | 3 |\n| 기능-001 | 4 |\n")
+                 "1. 전시관에는 지금 다시 보여 줄 장면이 없습니다\n2. 그런데 전시관은 한 곳이 아니라 세 곳 전체입니다\n3. 그래서 손대지 않아도 맞아 있는 전시관을 만듭니다\n4. 장비는 6품목 전부 맞춥니다\n5. 13주에 검수합니다\n\n"
+                 "| 장 | 쪽번호 | 액션 타이틀 | 증거 유형 | 증거 출처 | 사진 | 노트 |\n|---|---|---|---|---|---|---|\n| 1 | — | 표지 | 사진 | MANIFEST 1 | 외관 | — |\n| 2 | Ⅰ-1 | 전시관에는 지금 다시 보여 줄 장면이 없습니다 | 사진 | MANIFEST 2 | 간판 | 1-2 |\n| 3 | Ⅰ-2 | 그런데 전시관은 세 곳 전체입니다 | 큰 숫자 | 03a #1 | — | 3 |\n| 4 | Ⅰ-3 | 그래서 손대지 않아도 맞아 있는 전시관을 만듭니다 | 지도 | 03b 카드 2 | — | 4-5 |\n\n## 반대 의견 대응표\n| 반대 | 답하는 장 |\n|---|---|\n| a | 3 |\n\n"
+                 "## RFP 요구 대응표\n| 요구 ID | 대응 슬라이드 |\n|---|---|\n| 기획-001 | 3 |\n| 기능-001 | 4 |\n\n"
+                 "## 승인\n- 고스트 덱 승인\n- 승인자: 사업총괄\n- 일시: 2026-09-20\n")
     G = lint_plan(plan_good)
     ok("좋은 계획은 상 없음", not any(f["sev"] == "상" for f in G))
     ok("P2 가리키기 제목", any("가리킨다" in f["msg"] for f in lint_plan(plan_good.replace("5. 13주에 검수합니다", "5. 품질 여섯 항목은 Ⅲ장에서 답합니다"))))
     ok("P6 목차 쪽번호", "P6" in codes(lint_plan(plan_good + "\n목차: Ⅰ 제안개요 P.03~09\n")))
+    ok("P9 승인 절 없음(상)", any(f["code"] == "P9" and f["sev"] == "상" for f in P))
+    ok("P9 승인 있으면 없음", "P9" not in codes(G))
+    ok("P9 문구·승인자·일시 빠짐(상)", any(f["code"] == "P9" and f["sev"] == "상" for f in lint_plan(plan_good.replace("- 고스트 덱 승인\n- 승인자: 사업총괄\n- 일시: 2026-09-20\n", "- 얼른 넘어가기\n"))))
+    # L14 페인포인트 출처
+    l14_bad = "# 03a\n\n| # | 발주처 사실 | 출처 | RFP 연결 |\n|---|---|---|---|\n| 1 | 관람객이 줄었다 | 03a_raw #3 | 기획 25 |\n| 2 | 담당이 둘이다 | | 운영 15 |\n"
+    L14b = lint_text(l14_bad, "bids/x/03a_페인포인트.md")
+    ok("L14 재료 파일을 출처로(상)", any(f["code"] == "L14" and f["sev"] == "상" for f in L14b))
+    ok("L14 출처 빈칸(상)", sum(1 for f in L14b if f["code"] == "L14" and f["sev"] == "상") >= 2)
+    l14_nocol = "# 03a\n\n| # | 발주처 사실 | RFP 연결 |\n|---|---|---|\n| 1 | 관람객이 줄었다 | 기획 25 |\n"
+    ok("L14 출처 열 없음(상)", any(f["code"] == "L14" and f["sev"] == "상" for f in lint_text(l14_nocol, "bids/x/03a_페인포인트.md")))
+    l14_good = "# 03a\n\n| # | 발주처 사실 | 출처(링크·날짜) | RFP 연결 |\n|---|---|---|---|\n| 1 | 관람객이 줄었다 | 시의회 회의록 2025-11(링크) | 기획 25 |\n"
+    ok("L14 좋은 출처는 없음", "L14" not in codes(lint_text(l14_good, "bids/x/03a_페인포인트.md")))
+    ok("L14 페인포인트 아닌 파일은 검사 안 함", "L14" not in codes(lint_text(l14_bad, "bids/x/04_제안서_v1.md")))
     print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과(낱말·리듬·구조·형식·계획)" % n[0])
     return 1 if fails else 0
 
