@@ -24,6 +24,15 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 
 ## 절차 (순서를 바꾸지 않는다)
 
+### P-1 · 준비 점검 — 첫 동작. 사람이 doctor를 읽는 게 아니라 Claude가 점검하고 요구한다
+한준 2026-09-06: "어차피 클로드 통해서 설치하고 돌릴 테니 에이전트가 점검하고 요구하도록." 새 사업을 시작하는 첫 호출, 그리고 `_STATE.md`의 `준비점검`이 비었거나 7일이 지났으면 이 절부터 한다.
+① **셸 점검**: `python3 scripts/preflight.py --online`(저장소 루트 · 윈도우는 `python`)을 돌리고 결과를 읽는다. 필수(파이썬·스킬 설치본·비판자·의존성·셀프테스트)와 권장(훅·글꼴·명령·최신·판·검색)으로 나뉘어 나오고, 맨 아래에 **사용자에게 요구할 문장**이 그대로 있다.
+② **커넥터 점검**(셸에서 못 본다 — Claude 도구로): 피그마 `whoami`로 계정이 회사 계정인지 보고, 레이아웃 라이브러리 파일(`references/layouts.md`의 링크)을 `use_figma` 읽기 한 줄로 열어 본다. 안 열리면 「이 파일에 접근 권한이 없습니다 — 관리자에게 팀 프로젝트 이동 또는 공유를 요청해 주십시오」를 요구 목록에 넣는다. 노션은 `notion-search`로 「제안 재료 팩」을 찾아 보고, 없거나 기밀 절이 안 보이면 「회사 노션 커넥터로 다시 연결」을 요구 목록에 넣는다. 피그마는 P6 전까지만 있으면 되니 P0~P5는 피그마 없이도 간다(요구는 하되 막지 않는다).
+③ **요구는 한 번에**: 빠진 것을 한 메시지에 번호 목록으로 묶어 사용자에게 보낸다. 항목마다 「무엇을 · 어떻게(명령 그대로) · 누가(Claude가 대신 할 수 있으면 「제가 돌릴까요?」)」. Claude가 대신 할 수 있는 것(`install.sh --force`·`pip install`·글꼴 설치)은 사용자 확인 1회 뒤 Claude가 실행한다. 사람만 할 수 있는 것(커넥터 연결·파일 권한·마켓플레이스 플러그인)은 정확한 문구로 요구하고 기다린다.
+④ **다시 점검**: 사용자가 처리했다고 하면 ①②를 다시 돌린다. **필수가 하나라도 남으면 P0로 가지 않는다.** 권장은 `_STATE.md` `준비점검` 칸에 적고 진행한다.
+⑤ `_STATE.md`에 `준비점검: {일시, 필수: 통과, 권장미통과: [...], 피그마: 계정/라이브러리 열림 여부, 노션: 재료팩 열림 여부}`를 적는다. 헤드리스(`claude -p`)면 요구 목록을 `차단사항`에 적고 종료한다.
+
+
 ### P0 · 재료 팩
 1. 공고번호로 Notion 입찰레이더의 공고 페이지를 찾고 자식 페이지 **「📦 제안 재료 팩」**과 **「📄 RFP 원문(추출)」**을 읽는다(`notion-search` → `notion-fetch`).
    두 페이지의 「판본:」 도장이 같아야 한다. 원문은 `00_RFP원문_추출.md`로 저장해 다음 스텝에서 다시 읽지 않는다.
@@ -136,6 +145,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직�
 - `references/layouts.md` · `layouts.json` — **틀**: 회사 손 덱 118장에서 잰 하우스 문법과 틀 14종(정본 JSON → 와이어프레임 PNG · JS 좌표)
 - `references/material-pack.md`(서버와 공유하는 계약) · `material-pack.template.md`(팩이 위키에 없을 때 사람이 채우는 빈 서식) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
+- `../../scripts/preflight.py`(P-1 준비 점검 — 필수/권장 판정과 사용자에게 요구할 문장 생성 · `--online` · `--selftest`)
 - `scripts/probe_web.py`(발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색 · 숫자 문장 · 공식 데이터 링크 · 발상 자극 카드 → `03a_raw.md`, `--selftest` 오프라인 · `--dry-run` 검색어만 · 결과 0건이면 지역 바꿔 1회 재시도 후 종료코드 2) · `requirements.txt`(ddgs·requests·bs4·pillow)
 - `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(프리미티브 · header/actionTitle · notes/retitle · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`) · `figma_slides_diagrams.js`(증거 레시피 넷 — 동선 지도·연결도·배치도·타임라인 + `fitTable`) · `figma_slides_layouts.js`(하우스 틀 14종 `houseChrome`·`applyLayout`·`layoutFor` — 좌표는 `references/layouts.json`에서 `layout_wireframes.py`가 찍어 넣는다) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)

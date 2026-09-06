@@ -125,6 +125,7 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     layouts.md · layouts.json   ★ 틀 — 회사 손 덱 3개(118장)에서 잰 하우스 문법 + 틀 14종 · Figma 라이브러리 링크
     guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
+    ../../scripts/preflight.py  ★ P-1 준비 점검 — Claude가 첫 동작으로 돌려 필수/권장을 판정하고 빠진 것을 사용자에게 한 번에 요구
     probe_web.py                ★ 발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색(DuckDuckGo 무료) · 페이지 숫자 문장 · 공식 데이터 링크(대학알리미·알리오·지방재정365…) · 발상 기법 일곱별 자극 카드 → 03a_raw.md
     proposal_lint.py            ★ 초안·계획 정규식 검사 L1~L12 · P1~P6(번역투·빈 수사·40자·리듬·표·출처·브리프·제목 사슬·연속 유형·대응표) — LLM 없음 · 「상」은 RFP 관련만
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
