@@ -32,6 +32,7 @@ run "figures_svg"      "$S/figures_svg.py"
 run "proposal_lint"    "$S/proposal_lint.py"
 run "layout_wireframes" "$S/layout_wireframes.py"
 run "probe_web"        "$S/probe_web.py"
+run "gap_check"        "$S/gap_check.py"
 run "preflight"        "$DIR/scripts/preflight.py"
 
 # 공개 범위 검사 — repo_guard.py는 다른 묶음이 만든다. 아직 없으면 건너뛴다.

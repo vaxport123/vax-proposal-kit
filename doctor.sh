@@ -44,6 +44,7 @@ if [ -n "$PY" ]; then
   if $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" --selftest >/dev/null 2>&1; then ok "proposal_lint 셀프테스트 통과"; else bad "proposal_lint 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/layout_wireframes.py" --selftest >/dev/null 2>&1; then ok "layouts.json 셀프테스트 통과(틀 14종)"; else bad "layouts.json 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/probe_web.py" --selftest >/dev/null 2>&1; then ok "probe_web 셀프테스트 통과"; else bad "probe_web 셀프테스트 실패"; fi
+  if $PY "$DIR/skills/vax-proposal/scripts/gap_check.py" --selftest >/dev/null 2>&1; then ok "gap_check 셀프테스트 통과 (자료 결손 → 질문서)"; else bad "gap_check 셀프테스트 실패"; fi
   if $PY "$DIR/scripts/preflight.py" --selftest >/dev/null 2>&1; then ok "preflight 셀프테스트 통과 (Claude용 준비 점검)"; else bad "preflight 셀프테스트 실패"; fi
   if $PY -c "import ddgs" >/dev/null 2>&1; then
     ok "ddgs(웹 검색) 있음"
