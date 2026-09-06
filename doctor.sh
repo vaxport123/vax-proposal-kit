@@ -43,6 +43,8 @@ if [ -n "$PY" ]; then
   if $PY "$DIR/skills/vax-proposal/scripts/figures_svg.py" --selftest >/dev/null 2>&1; then ok "figures_svg 셀프테스트 통과"; else bad "figures_svg 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" --selftest >/dev/null 2>&1; then ok "proposal_lint 셀프테스트 통과"; else bad "proposal_lint 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/layout_wireframes.py" --selftest >/dev/null 2>&1; then ok "layouts.json 셀프테스트 통과(틀 14종)"; else bad "layouts.json 셀프테스트 실패"; fi
+  if $PY "$DIR/skills/vax-proposal/scripts/probe_web.py" --selftest >/dev/null 2>&1; then ok "probe_web 셀프테스트 통과"; else bad "probe_web 셀프테스트 실패"; fi
+  if $PY -c "import ddgs" >/dev/null 2>&1; then ok "ddgs(웹 검색) 있음"; else info "ddgs 없음 — pip install -r skills/vax-proposal/scripts/requirements.txt (probe_web.py 가 쓴다)"; fi
   EX="$DIR/examples/예시문화재단_실감콘텐츠"
   if $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" "$EX/04_제안서_v1.md" >/dev/null 2>&1 && $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" "$EX/07_슬라이드계획_v1.md" --plan >/dev/null 2>&1; then ok "examples/ 예시가 lint 통과(상 0)"; else bad "examples/ 예시가 lint에 걸린다 — 규칙과 예시가 어긋났다"; fi
 else bad "python3 없음 — HTML 렌더 불가"; fi

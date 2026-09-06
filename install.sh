@@ -60,7 +60,9 @@ copy_skill_dir(){ # $1=repo_root  $2=dest_name
 install_git(){ # $1=name $2=source
   local name="$1" source="$2" tmp
   # 이 저장소 자신(vax-proposal)은 clone 없이 로컬에서 바로 복사한다
-  if [ "$name" = "vax-proposal" ]; then copy_skill_dir "$DIR/skills/vax-proposal" "$name"; return; fi
+  if [ "$name" = "vax-proposal" ]; then copy_skill_dir "$DIR/skills/vax-proposal" "$name"; 
+    if [ -f "$DIR/skills/vax-proposal/scripts/requirements.txt" ]; then log "pip 의존성(ddgs·requests·bs4·pillow) 설치"; python3 -m pip install -q -r "$DIR/skills/vax-proposal/scripts/requirements.txt" 2>/dev/null || python -m pip install -q -r "$DIR/skills/vax-proposal/scripts/requirements.txt" 2>/dev/null || log "⚠ pip 실패 — 수동: pip install -r skills/vax-proposal/scripts/requirements.txt"; fi
+    return; fi
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' RETURN
   log "clone $source"
   git clone --depth 1 "$source" "$tmp/repo" >/dev/null 2>&1 || { log "⚠ clone 실패"; return 1; }

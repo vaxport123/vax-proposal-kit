@@ -89,7 +89,7 @@ flowchart LR
 
 | 기준 | 한 줄 | 어디에 |
 |---|---|---|
-| **RFP 기준 인사이트 — 기관을 웹에서 읽는다** | RFP 고유명사를 출발점으로 기관 홈페이지·보도자료·전년도 같은 사업·감사/회의록·상위 계획을 읽고, 「RFP 문장 ↔ 확인한 사실 ↔ 숨은 필요」로 배점 항목에 연결한다. 연결 안 되면 버린다 | [`writing.md`](skills/vax-proposal/references/writing.md) §2 → `03a_페인포인트.md` |
+| **RFP 기준 인사이트 — 기관을 웹에서 읽는다** | **먼저 `probe_web.py`가 일곱 유형 검색·숫자 문장·공식 데이터 링크를 긁어 오고**, RFP 고유명사를 출발점으로 기관 홈페이지·보도자료·전년도 같은 사업·감사/회의록·상위 계획을 읽고, 「RFP 문장 ↔ 확인한 사실 ↔ 숨은 필요」로 배점 항목에 연결한다. 연결 안 되면 버린다 | [`writing.md`](skills/vax-proposal/references/writing.md) §2 → `03a_페인포인트.md` |
 | **VAXPORT만의 색 — 카드 × 페인포인트** | 실물·등록·실적·사람·방식 카드에 「경쟁사가 못 쓰는 이유」를 붙이고, 페인포인트와 교차해 아이디어 열 개에서 셋을 고른다. 회사명을 가리고 읽어 경쟁사가 그대로 쓸 수 있으면 지운다 | [`writing.md`](skills/vax-proposal/references/writing.md) §3 → `03b_방향전략.md` |
 | **AI 같지 않은 문장 — 말로 먼저** | 기억할 문장 하나 → 말로 먼저 → 구체에서 시작 → 한 사람 시점 → 소리 내어 읽기. AI 티는 낱말·리듬·구조 세 층에서 잡는다 | [`writing.md`](skills/vax-proposal/references/writing.md) §4 · `proposal-critic` A1~A9 |
 
@@ -122,6 +122,7 @@ skills/vax-proposal/            ★ 스킬 (install.sh 가 ~/.claude/skills 에 
     layouts.md · layouts.json   ★ 틀 — 회사 손 덱 3개(118장)에서 잰 하우스 문법 + 틀 14종 · Figma 라이브러리 링크
     guardrails.md                 공개 금지 정보 (render_html.py가 기계로 막는다)
   scripts/
+    probe_web.py                ★ 발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색(DuckDuckGo 무료) · 페이지 숫자 문장 · 공식 데이터 링크(대학알리미·알리오·지방재정365…) · 발상 기법 일곱별 자극 카드 → 03a_raw.md
     proposal_lint.py            ★ 초안·계획 정규식 검사 L1~L12 · P1~P6(번역투·빈 수사·40자·리듬·표·출처·브리프·제목 사슬·연속 유형·대응표) — LLM 없음 · 「상」은 RFP 관련만
     render_html.py                마크다운 → 회사 디자인 HTML 1장 (+ 공개 금지 검사)
     figures_svg.py                ```fig 블록 → SVG 도식·표 14종 (--no-title · 표 글자는 폭에 비례)

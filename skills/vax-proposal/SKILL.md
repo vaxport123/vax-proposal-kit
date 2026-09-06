@@ -56,7 +56,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 
 ### P3.5 · 페인포인트 → 색채 카드 → 아이디어 → 방향·전략 → `03a_페인포인트.md` · `03b_방향전략.md`
 한준 2026-09-05 "3가지에 집중": 이 스텝이 그 셋 중 둘(페인포인트·색채)을 만든다. `writing.md` §2·§3·§5를 순서대로.
-1. **페인포인트**(`writing.md` §2): RFP 배경·목적의 고유명사를 출발점으로 기관 홈페이지·보도자료·전년도 같은 사업·감사/회의록·상위 계획·이용자 목소리를 웹에서 읽는다(`deep-research` 활용).
+1. **페인포인트**(`writing.md` §2): **먼저 `python3 scripts/probe_web.py --org … --kw … --prev … --type … --fetch --news --out 03a_raw.md`**로 일곱 유형 검색·숫자 문장·공식 데이터 링크·발상 자극 카드를 긁어 온다. 그다음 RFP 배경·목적의 고유명사를 출발점으로 원 페이지를 열어 확인한다(`deep-research`·WebFetch 활용). 대학이면 대학알리미, 공공기관이면 알리오에서 숫자를 먼저 적는다.
    「RFP 문장 ↔ 확인한 사실(출처·날짜) ↔ 숨은 필요」 5~8줄을 `03a_페인포인트.md`에 쓴다. **배점 항목에 연결되지 않는 관찰은 버린다.** 「RFP에 없지만 발주처가 원하는 것」 셋을 따로 뽑는다.
 2. **색채 카드**(§3): 재료 팩 §5·§7과 위키 색인에서 이 공고에 닿는 우리 자산을 실물·등록·실적·사람·방식 다섯 종류로 8~15장. 카드마다 「경쟁사가 못 쓰는 이유」 한 줄. 못 붙이면 카드가 아니다.
 3. **아이디어**: 먼저 발상 기법 일곱(§3 — 과업 다시 정의 · 하루 시나리오 · 경쟁사 표준 답 예측 · 우리 실물을 현장에 · 숫자 하나 · 반대 뒤집기 · 없는 것 찾기)으로 후보를 만들고, 페인포인트 × 카드 교차표에서 근거를 붙여 열 개 넘게 → 셋(배점 · 예산 · RFP에 없는 필요 · 경쟁사 모방 불가 · 담당자가 한 문장으로 옮길 수 있나). 「요구를 더 잘 하는 방법」과 「값을 올리지 않는 추가 제안」 두 갈래. **이름 후보 셋 → 하나**(덱의 모티프).
@@ -116,6 +116,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직�
 - `references/layouts.md` · `layouts.json` — **틀**: 회사 손 덱 118장에서 잰 하우스 문법과 틀 14종(정본 JSON → 와이어프레임 PNG · JS 좌표)
 - `references/material-pack.md`(서버와 공유하는 계약) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
+- `scripts/probe_web.py`(발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색 · 숫자 문장 · 공식 데이터 링크 · 발상 자극 카드 → `03a_raw.md`, `--selftest` 오프라인) · `requirements.txt`(ddgs·requests·bs4·pillow)
 - `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(프리미티브 · header/actionTitle · notes/retitle · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`) · `figma_slides_diagrams.js`(증거 레시피 넷 — 동선 지도·연결도·배치도·타임라인 + `fitTable`) · `figma_slides_layouts.js`(하우스 틀 14종 `houseChrome`·`applyLayout`·`layoutFor` — 좌표는 `references/layouts.json`에서 `layout_wireframes.py`가 찍어 넣는다) · `ui_tokens.py`(디자인 정본 사본)
 - `../../examples/` — 이름을 가린 완성 예시 한 세트(가상 발주처). 새 사업의 서식은 이것을 보고 따른다. lint를 통과하는 상태로 유지한다(회귀 테스트)
 - `../../agents/proposal-critic.md` — 비판자(한글 표현 A1~A9 · 디자인 B1~B10, B군은 경향 지적). `install.sh`가 `~/.claude/agents/`에 복사한다

@@ -1,0 +1,5 @@
+# vax-proposal 스킬 스크립트 의존성 — install.sh 가 설치한다. 키가 필요한 것은 없다.
+ddgs>=9            # probe_web.py — DuckDuckGo 무료 검색(텍스트·뉴스). 발주처·과업 웹 재료 자동 수집
+requests>=2.31     # probe_web.py 페이지 열기 · img_fetch.py 사진 받기
+beautifulsoup4>=4  # probe_web.py 본문 추출
+pillow>=10         # layout_wireframes.py 와이어프레임 · img_fetch.py 크기 검사
