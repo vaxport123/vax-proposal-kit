@@ -8,7 +8,7 @@
 --online 이면 웹 검색 1회·원격 태그 확인까지 한다(5~10초). 커넥터(노션·피그마)는 셸에서 볼 수 없어 여기서는 안 본다 — SKILL P-1이 Claude 도구로 확인한다.
 
 판정 항목(필수 = 없으면 P0로 못 간다):
-  필수  파이썬 3.10+ · 스킬 설치본이 저장소와 같음 · 비판자 에이전트 설치 · 파이썬 의존성(ddgs·requests·bs4·PIL) · 셀프테스트 7종
+  필수  파이썬 3.10+ · 스킬 설치본이 저장소와 같음 · 비판자 에이전트 설치 · 파이썬 의존성(ddgs·requests·bs4·PIL) · 셀프테스트 8종
   권장  커밋 훅(개발자만) · 글꼴 18종(피그마 제작 때) · /bid-loop 명령(루프형만) · 저장소 최신 · 판 최신(--online) · 웹 검색 통함(--online)
 """
 import hashlib, io, json, os, platform, re, subprocess, sys
@@ -82,11 +82,11 @@ def checks(online=False):
         None if not missing else "`pip install -r skills/vax-proposal/scripts/requirements.txt` (없는 것: %s)" % ",".join(missing), claude_can=True)
 
     fails = []
-    for f in ("ui_tokens", "render_html", "figures_svg", "proposal_lint", "layout_wireframes", "probe_web", "gap_check"):
+    for f in ("ui_tokens", "render_html", "figures_svg", "proposal_lint", "layout_wireframes", "probe_web", "gap_check", "readiness"):
         rc, _ = run([sys.executable, os.path.join(SCRIPTS, f + ".py"), "--selftest"], timeout=90)
         if rc != 0:
             fails.append(f)
-    add("selftest", True, not fails, "셀프테스트 7종 " + ("통과" if not fails else "실패: " + ",".join(fails)),
+    add("selftest", True, not fails, "셀프테스트 8종 " + ("통과" if not fails else "실패: " + ",".join(fails)),
         None if not fails else "셀프테스트가 실패했습니다(%s). `git pull` 뒤 다시 돌리고, 그래도 실패하면 이슈로 올리십시오." % ",".join(fails))
 
     rc, out = run(["git", "config", "--get", "core.hooksPath"])

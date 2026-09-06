@@ -33,6 +33,12 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 ⑤ `_STATE.md`에 `준비점검: {일시, 필수: 통과, 권장미통과: [...], 피그마: 계정/라이브러리 열림 여부, 노션: 재료팩 열림 여부}`를 적는다. 헤드리스(`claude -p`)면 요구 목록을 `차단사항`에 적고 종료한다.
 
 
+### P-0 · 접수 — 키트는 묻는 쪽이다. 다 받기 전에는 만들지 않는다 (`intake.md`)
+한준 2026-09-06: "사용자와 상호작용하면서 필요한 자료 요구하고, 모든 자료·아이디어가 완성되었을 때 초안 제작과 피그마 디자인 시작이 이뤄지도록. RFP 넣어 달라 하거나, 주요 방향성 달라 하거나, 피그마 연결·노션 연결 요구하고."
+P-1이 끝나면 `bids/{사업명}/00_인테이크.md`를 `references/intake.template.md`에서 만들고 **다섯 묶음을 한 번에 한 묶음씩** 묻는다: ① **RFP 원문**(노션 링크·파일·붙여넣기 — 없으면 어떤 단계도 시작하지 않는다) → ② **연결**(노션: 재료 팩·위키 열림, 안 되면 팩 직접 제공 · 피그마: 회사 계정·라이브러리 열림, 안 되면 덱 게이트에서 다시) → ③ **주요 방향**(사용자가 말로 한두 문장 · 꼭 넣을 것 · 하지 말 것 · 제약 · 발표) → ④ **재료**(이전 제안서 · 담당자 메모 · 만난 사람 · 경쟁사 · 사진 위치 — 「없음」도 답) → ⑤ **확인**(요약을 보이고 「이대로 시작」).
+받는 대로 인테이크에 `[x]`와 값을 적는다. 사용자가 「그냥 진행해」라면 RFP·피그마 연결·승인은 예외 없이 필요하다고 답하고, 나머지는 `건너뜀(일시, 사용자 결정)`을 적고 진행한다. 헤드리스에서는 접수하지 않는다(차단사항에 적고 종료).
+**게이트 둘**은 `python3 scripts/readiness.py bids/{사업명} --gate draft|deck`가 판정한다. 초안 게이트(P4 앞)·덱 게이트(P6 ⑨ 피그마 앞). 미통과면 그 출력의 「사용자에게 요구할 것」을 `asking.md` §5 서식으로 한 메시지에 보내고 기다린다.
+
 ### P0 · 재료 팩
 1. 공고번호로 Notion 입찰레이더의 공고 페이지를 찾고 자식 페이지 **「📦 제안 재료 팩」**과 **「📄 RFP 원문(추출)」**을 읽는다(`notion-search` → `notion-fetch`).
    두 페이지의 「판본:」 도장이 같아야 한다. 원문은 `00_RFP원문_추출.md`로 저장해 다음 스텝에서 다시 읽지 않는다.
@@ -77,6 +83,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 루프형이면 방향을 `_STATE.md`에 적고 다음 스텝에서 이어 간다.
 
 ### P4 · 초안 + 검토 → `04_제안서_v1.md` … `v4`
+**초안 게이트**: 들어가기 전에 `readiness.py … --gate draft`가 통과해야 한다(RFP · 연결 · 01·02·03 · 출처 있는 사실 5 · 카드 8 · **사용자가 말로 준 방향** · 방향 동의 · 접수 확인 · 확인필요 0 또는 「그대로 진행」). 미통과면 초안을 쓰지 않고 남은 것을 요구한다.
 `writing.md` §4(쓰는 순서: 기억할 문장 하나 → 말로 먼저 → 구체에서 시작 → 한 사람 시점 → 소리 내어 읽기)와 §6을 따른다. 마크다운으로 쓴다(HTML·docx·pptx는 이것을 렌더한 결과). 투입인력 장은 `staffing-table.md` 구조에 위키 인력 데이터를 채운다.
 비교·대조·순서·수치·일정·체계는 문단 아래 ```fig 블록으로 지정한다(`deck.md` §3). `python3 scripts/figures_svg.py 04_제안서_vN.md --list`로 세어 절과 대조한다.
 검토마다 **먼저 `python3 scripts/proposal_lint.py 04_제안서_vN.md`를 돌린다**(정규식 검사 · 어느 기계에서나 같은 답). 「상」이 있으면 다음 회차로 못 간다. 결과를 `logs/lint_N.txt`로 남기고 비판자에게 넘긴다.
@@ -101,7 +108,7 @@ description: 입찰 제안 하네스 — 「도전」 공고의 재료 팩(정�
 ⓪ **재료 게이트**(`deck.md` §0) → `06_재료점검.md`: 심사위원이 내릴 결정 한 문장 · 반대 셋 · 발주처 현장 사진 6 · 우리 실물 6 · 출처 있는 숫자 5 · 색채 카드 8. 빈 칸이면 **덱을 만들지 않고 재료 요청서를 낸다**(누가 무엇을 구해야 하나). 요청서 초안은 `gap_check.py … --phase P6`가 만든다(개수 미달 항목마다 누가·무엇을 · 승인 절 비었으면 승인 요청까지) — `asking.md` §5 서식으로 한 메시지에.
 ① `01_평가표.md` §7의 RFP 규칙 → ② 제목 사슬(액션 타이틀 — 발주처가 얻는 것이 문장 안에, 앞 제목을 받고, 붙여 읽어 한 글, 발표자가 입으로 말하는 문형) → ③ **고스트 덱 표**(장 · 쪽번호 · 액션 타이틀 · 증거 유형 · 증거 출처 · 사진 · 노트) → ④ RFP 요구 ID 대응표 · 반대 의견 대응표 → ⑤ 리듬 점검(PART마다 사진·큰 숫자·지도/연결도 1 이상, 표는 절반 이하) → ⑥ 디자인 브리프 → `07_슬라이드계획_v1.md`
 → ⑦ `python3 scripts/proposal_lint.py 07_슬라이드계획_v1.md --plan`(「상」: 재료 점검 절 없음 · 증거 열 없음/증거 빈칸 · 대응표 빈칸) → `proposal-critic`(mode deck) → **사람 승인 1회**(헤드리스면 `차단사항`에 적고 종료)
-→ ⑧ 사진 받기·발주처 CI(`images.md`) → ⑨ Figma: 증거가 가장 강한 장 하나를 먼저 만들어 화면으로 확인 → 나머지. 레이아웃은 증거 유형별로 고른다(`references/layouts.md` 틀 14종 · `layoutFor(증거 유형)` → `houseChrome` + `applyLayout` · Figma 라이브러리를 복제해 시작해도 된다). 지도·연결도·배치도·타임라인은 그 자리에 `figma_slides_diagrams.js` 레시피로. 문단은 `notes()`로 발표자 노트에.
+→ ⑧ 사진 받기·발주처 CI(`images.md`) → **덱 게이트** `readiness.py … --gate deck`(초안 게이트 전부 · 심사 80 · **피그마 연결** · 재료점검 여섯 · 07 · 승인) 통과 전에는 Figma를 열지 않는다 → ⑨ Figma: 증거가 가장 강한 장 하나를 먼저 만들어 화면으로 확인 → 나머지. 레이아웃은 증거 유형별로 고른다(`references/layouts.md` 틀 14종 · `layoutFor(증거 유형)` → `houseChrome` + `applyLayout` · Figma 라이브러리를 복제해 시작해도 된다). 지도·연결도·배치도·타임라인은 그 자리에 `figma_slides_diagrams.js` 레시피로. 문단은 `notes()`로 발표자 노트에.
 → ⑩ 검사는 `evidenceCheck()`(증거 없는 장·사진 없는 PART·발주처 없는 제목)부터, 그다음 `validate()`·`leftovers()`. 전 장 화면을 모음판으로 찍어 `proposal-critic`(mode deck, `shots_dir`)에.
 헤드리스(`claude -p`)에서는 Figma MCP가 붙지 않는다. ⑨ 이후는 사람이 앉은 세션에서 한다.
 HTML 1장이 필요하면 `python3 scripts/render_html.py 04_제안서_vN.md 06_제안서.html "제목" --md-link 04_제안서_vN.md`(문서용 fig 도식은 여기서 그려진다 · 공개 금지 정보가 있으면 렌더 거부).
@@ -152,6 +159,7 @@ Figma에 들어간 뒤로는 Figma가 정본이다. 회사 일반현황·조직�
 - `references/material-pack.md`(서버와 공유하는 계약) · `material-pack.template.md`(팩이 위키에 없을 때 사람이 채우는 빈 서식) · `staffing-table.md`(인력표 서식) · `reference-index.template.md`(색인 구조) · `images.md`(사진 출처·사용권 절차) ·
   `figma-howto.md`(Figma MCP 실측 요령) · `guardrails.md`(공개 금지 목록)
 - `../../scripts/preflight.py`(P-1 준비 점검 — 필수/권장 판정과 사용자에게 요구할 문장 생성 · `--online` · `--selftest`)
+- `references/intake.md`(접수 — 다섯 묶음 순서 · 게이트 둘 정의 · 「그냥 진행해」 규칙) · `intake.template.md`(`00_인테이크.md` 서식) · `scripts/readiness.py`(초안 게이트·덱 게이트 판정 → 남은 것을 사용자에게 요구할 문장으로 · `--gate draft|deck` · 종료코드 1=미통과 · `--selftest`)
 - `references/asking.md`(묻기와 배우기 — 언제·무엇을·어떻게 묻나 · 단계별 결손 카탈로그 · 회고 일곱 · 배운 것 두 갈래) · `scripts/gap_check.py`(사업 폴더를 읽어 결손을 세고 질문서 초안 `logs/질문_<단계>.md` 생성 · `--phase auto|P0|P3.5|P4|P6|P7` · 종료코드 1=질문 있음 · `--selftest`)
 - `scripts/probe_web.py`(발주처·과업 웹 재료 자동 수집 — 일곱 유형 검색 · 숫자 문장 · 공식 데이터 링크 · 발상 자극 카드 → `03a_raw.md`, `--selftest` 오프라인 · `--dry-run` 검색어만 · 결과 0건이면 지역 바꿔 1회 재시도 후 종료코드 2) · `requirements.txt`(ddgs·requests·bs4·pillow)
 - `scripts/proposal_lint.py`(초안·계획 정규식 검사 — 글 L1~L12 · 계획 P1~P6, 「상」은 RFP 관련만, `--selftest`) · `render_html.py`(마크다운 → HTML) · `figures_svg.py`(fig 블록 → SVG) · `img_fetch.py`(사진 받기 + MANIFEST) · `figma_slides_helpers.js`(프리미티브 · header/actionTitle · notes/retitle · 그림 프리미티브 · `validate` · `evidenceCheck` · `leftovers`) · `figma_slides_diagrams.js`(증거 레시피 넷 — 동선 지도·연결도·배치도·타임라인 + `fitTable`) · `figma_slides_layouts.js`(하우스 틀 14종 `houseChrome`·`applyLayout`·`layoutFor` — 좌표는 `references/layouts.json`에서 `layout_wireframes.py`가 찍어 넣는다) · `ui_tokens.py`(디자인 정본 사본)
