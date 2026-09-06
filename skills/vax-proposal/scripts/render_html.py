@@ -18,6 +18,12 @@ import os
 import re
 import sys
 
+try:  # 윈도우 cp949 콘솔에서 한글 출력이 깨지지 않게 (실패해도 무시)
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 # 윈도우 콘솔(cp949)에서 한글·기호(—, ⚠️) 출력이 깨지지 않게. 리눅스에서는 그대로다.
 for _s in (sys.stdout, sys.stderr):
     if hasattr(_s, "reconfigure"):

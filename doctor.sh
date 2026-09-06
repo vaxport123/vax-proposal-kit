@@ -44,7 +44,29 @@ if [ -n "$PY" ]; then
   if $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" --selftest >/dev/null 2>&1; then ok "proposal_lint 셀프테스트 통과"; else bad "proposal_lint 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/layout_wireframes.py" --selftest >/dev/null 2>&1; then ok "layouts.json 셀프테스트 통과(틀 14종)"; else bad "layouts.json 셀프테스트 실패"; fi
   if $PY "$DIR/skills/vax-proposal/scripts/probe_web.py" --selftest >/dev/null 2>&1; then ok "probe_web 셀프테스트 통과"; else bad "probe_web 셀프테스트 실패"; fi
-  if $PY -c "import ddgs" >/dev/null 2>&1; then ok "ddgs(웹 검색) 있음"; else info "ddgs 없음 — pip install -r skills/vax-proposal/scripts/requirements.txt (probe_web.py 가 쓴다)"; fi
+  if $PY -c "import ddgs" >/dev/null 2>&1; then
+    ok "ddgs(웹 검색) 있음"
+    # 실제 검색 1회 — 결과 0이면 검색이 막힌 것이고, 네트워크가 없으면 info로만 남긴다. 5초 안에 끝낸다.
+    TMO=""; command -v timeout >/dev/null 2>&1 && TMO="timeout 5"
+    R="$($TMO $PY - <<'PYEOF' 2>/dev/null
+import sys
+try:
+    from ddgs import DDGS
+except Exception:
+    from duckduckgo_search import DDGS  # 옛 이름 대비
+try:
+    n = len(list(DDGS().text("나라장터 입찰공고", region="kr-kr", max_results=3)))
+    print("net %d" % n)
+except Exception:
+    print("nonet")
+PYEOF
+)"
+    case "$R" in
+      "net 0") bad "ddgs 검색이 0건 — 검색이 막혔을 수 있다(잠시 뒤 재시도·probe_web --dry-run으로 검색어 확인)" ;;
+      net*)    ok "ddgs 실제 검색 통과(${R#net } 건)" ;;
+      *)       info "ddgs 실제 검색 못 함(오프라인?) — 네트워크가 되면 다시 확인" ;;
+    esac
+  else info "ddgs 없음 — pip install -r skills/vax-proposal/scripts/requirements.txt (probe_web.py 가 쓴다)"; fi
   EX="$DIR/examples/예시문화재단_실감콘텐츠"
   if $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" "$EX/04_제안서_v1.md" >/dev/null 2>&1 && $PY "$DIR/skills/vax-proposal/scripts/proposal_lint.py" "$EX/07_슬라이드계획_v1.md" --plan >/dev/null 2>&1; then ok "examples/ 예시가 lint 통과(상 0)"; else bad "examples/ 예시가 lint에 걸린다 — 규칙과 예시가 어긋났다"; fi
 else bad "python3 없음 — HTML 렌더 불가"; fi
@@ -55,6 +77,25 @@ if git -C "$DIR" rev-parse >/dev/null 2>&1; then
   behind=$(git -C "$DIR" rev-list --count HEAD..origin/main 2>/dev/null || echo "?")
   [ "$behind" = "0" ] && ok "최신(main)" || bad "원격보다 ${behind} 커밋 뒤 → git pull && bash install.sh --force"
 else info "git 저장소 아님(zip으로 받았나) — 갱신은 다시 clone"; fi
+
+printf '\n▶ 판 · 커밋 훅\n'
+if [ -f "$DIR/VERSION" ]; then
+  VER="$(tr -d ' \t\r\n' < "$DIR/VERSION")"
+  ok "이 저장소 판 v$VER"
+  if git -C "$DIR" rev-parse >/dev/null 2>&1; then
+    # 원격 태그 중 가장 높은 판을 찾아 이 저장소 판과 견준다. 오프라인이면 info.
+    LATEST="$(git -C "$DIR" ls-remote --tags --refs origin 2>/dev/null | sed 's#.*/v##' | sort -V | tail -n1)"
+    if [ -z "$LATEST" ]; then info "원격 태그를 못 읽음(오프라인?) — 새 판 확인 생략"
+    elif [ "$LATEST" = "$(printf '%s\n%s\n' "$VER" "$LATEST" | sort -V | tail -n1)" ] && [ "$LATEST" != "$VER" ]; then
+      bad "새 판 v$LATEST 있음 → git pull && bash install.sh --force"
+    else ok "최신 판(원격 태그와 같음)"; fi
+  fi
+else info "VERSION 파일 없음 — 판 표시 생략"; fi
+if git -C "$DIR" rev-parse >/dev/null 2>&1; then
+  HP="$(git -C "$DIR" config --get core.hooksPath 2>/dev/null || true)"
+  if [ "$HP" = ".githooks" ]; then ok "커밋 훅 켜짐 — 커밋 전에 셀프테스트가 돈다"
+  else bad "커밋 훅 꺼짐 → bash install.sh (git config core.hooksPath .githooks)"; fi
+fi
 
 printf '\n▶ 커넥터 (Claude 안에서 확인)\n'
 info "Notion: Claude에 「재료 팩 R26BK… 열어줘」 → 입찰 레이더 공고 밑 「📦 제안 재료 팩」이 열리면 정상"

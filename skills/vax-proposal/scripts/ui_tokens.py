@@ -22,6 +22,12 @@
 """
 import sys
 
+try:  # 윈도우 cp949 콘솔에서 한글 출력이 깨지지 않게 (실패해도 무시)
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 # ── 표면과 잉크 ──────────────────────────────────────────────────────────────
 # `surface`(배경) 위에 `ink`(글자)를 올린다. 아래 검사가 **모든 짝**의 대비를 재므로,
 # 값을 고치면 못 미치는 짝이 바로 이름과 숫자로 드러난다.
