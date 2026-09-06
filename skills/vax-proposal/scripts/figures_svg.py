@@ -37,6 +37,12 @@ import os
 import re
 import sys
 
+try:  # 윈도우 cp949 콘솔에서 한글 출력이 깨지지 않게 (실패해도 무시)
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 for _s in (sys.stdout, sys.stderr):
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8")

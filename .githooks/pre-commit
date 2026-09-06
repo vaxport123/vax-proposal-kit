@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# 커밋 전에 셀프테스트 여섯 종과 공개 범위 검사를 돌린다. 하나라도 실패하면 커밋을 막는다.
+# install.sh가 `git config core.hooksPath .githooks`로 이 폴더를 켠다. doctor.sh가 켜졌는지 확인한다.
+# 급할 때 건너뛰려면 `git commit --no-verify` (되도록 쓰지 않는다).
+set -uo pipefail
+DIR="$(git rev-parse --show-toplevel)"
+S="$DIR/skills/vax-proposal/scripts"
+FAIL=0
+
+# 파이썬 실행 파일: python3 → python 순으로 찾는다(윈도우에는 python3가 없을 수 있다).
+PY=""; for c in python3 python; do command -v "$c" >/dev/null 2>&1 && { PY="$c"; break; }; done
+if [ -z "$PY" ]; then echo "✗ 파이썬이 없어 셀프테스트를 못 돌린다 — 커밋 거부"; exit 1; fi
+
+run() { # $1=이름 $2=스크립트경로
+  if [ ! -f "$2" ]; then echo "· $1 없음 — 건너뜀"; return; fi
+  if $PY "$2" --selftest >/dev/null 2>&1; then echo "  ✓ $1"; else echo "  ✗ $1 셀프테스트 실패"; FAIL=$((FAIL+1)); fi
+}
+
+echo "▶ 셀프테스트"
+run "ui_tokens"        "$S/ui_tokens.py"
+run "render_html"      "$S/render_html.py"
+run "figures_svg"      "$S/figures_svg.py"
+run "proposal_lint"    "$S/proposal_lint.py"
+run "layout_wireframes" "$S/layout_wireframes.py"
+run "probe_web"        "$S/probe_web.py"
+
+# 공개 범위 검사 — repo_guard.py는 다른 묶음이 만든다. 아직 없으면 건너뛴다.
+if [ -f "$DIR/scripts/repo_guard.py" ]; then
+  echo "▶ 공개 범위 검사"
+  if $PY "$DIR/scripts/repo_guard.py" >/dev/null 2>&1; then echo "  ✓ repo_guard"; else echo "  ✗ repo_guard — 회사 사실·실명·공고번호·금액이 새어 나갔을 수 있다"; FAIL=$((FAIL+1)); fi
+else
+  echo "· repo_guard.py 아직 없음 — 건너뜀"
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+  echo ""
+  echo "커밋을 막았다. 위 ✗ ${FAIL}건을 고친 뒤 다시 커밋한다."
+  exit 1
+fi
+echo "모두 통과 — 커밋 진행."
+exit 0

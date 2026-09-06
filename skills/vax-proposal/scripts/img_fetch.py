@@ -27,6 +27,12 @@ import os
 import re
 import sys
 import urllib.request
+
+try:  # 윈도우 cp949 콘솔에서 한글 출력이 깨지지 않게 (실패해도 무시)
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 from datetime import date
 
 for _s in (sys.stdout, sys.stderr):

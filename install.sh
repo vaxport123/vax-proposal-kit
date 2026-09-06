@@ -142,6 +142,14 @@ if [ "$HAS_CLAUDE" = 1 ] && [ -f "$DIR/loops/bid-loop/bid-loop.md" ]; then
   else cp "$DIR/loops/bid-loop/bid-loop.md" "$HOME/.claude/commands/bid-loop.md"; log "✓ 설치: ~/.claude/commands/bid-loop.md"; fi
 fi
 
+# 커밋 훅 — .githooks/pre-commit이 커밋 전에 셀프테스트 여섯 종과 공개 범위 검사를 돌린다.
+# 저장소 안에서만 켜지므로(core.hooksPath) 다른 저장소에는 영향이 없다. doctor가 켜졌는지 확인한다.
+if git -C "$DIR" rev-parse >/dev/null 2>&1 && [ -f "$DIR/.githooks/pre-commit" ]; then
+  hdr "커밋 훅  (core.hooksPath = .githooks)"
+  git -C "$DIR" config core.hooksPath .githooks && log "✓ 커밋 전에 셀프테스트가 돈다"
+  chmod +x "$DIR/.githooks/pre-commit" 2>/dev/null || true
+fi
+
 # 글꼴 — 제안 슬라이드는 Freesentation(기본)·Paperlogy(표시용)를 쓴다(references/deck.md §4).
 # 사용자 계정에만 설치하므로 관리자 권한이 필요 없다. 자세한 것은 fonts/README.md.
 if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then

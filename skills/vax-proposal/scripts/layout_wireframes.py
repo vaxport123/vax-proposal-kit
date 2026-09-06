@@ -8,6 +8,12 @@
 JSON을 고친 뒤 이 스크립트를 돌린다. JS나 PNG를 직접 고치지 않는다.
 """
 import json, os, sys, io
+
+try:  # 윈도우 cp949 콘솔에서 한글 출력이 깨지지 않게 (실패해도 무시)
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 JSON_PATH = os.path.join(HERE, "..", "references", "layouts.json")

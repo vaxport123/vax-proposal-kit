@@ -28,8 +28,10 @@
 ```bash
 git clone https://github.com/vaxport123/vax-proposal-kit
 cd vax-proposal-kit && bash install.sh     # 스킬 → ~/.claude/skills · 글꼴 → 사용자 글꼴 폴더 (관리자 권한 불필요)
-bash doctor.sh                             # 스킬·글꼴·파이썬·렌더러·저장소 점검 + 커넥터 확인 방법
+bash doctor.sh                             # 스킬·글꼴·파이썬·렌더러·판·커밋 훅·웹 검색·저장소 점검 + 커넥터 확인 방법
 ```
+
+**처음이라면 [`START.md`](START.md)를 먼저 읽는다** — 읽는 순서, 커넥터가 무엇이 열려야 정상인지, 첫 사업 30분 코스가 한 쪽에 있다.
 
 그다음 Claude에 Notion 커넥터를 연결하고 이렇게 말한다.
 
@@ -47,6 +49,7 @@ bash install.sh --force      # 덮어쓰기
 ```
 `marketplace` 항목(fluent-korean · humanize-korean · claw-hwp)은 스크립트가 못 깐다 — 출력되는 `/plugin` 명령을 Claude Code에서 1회 실행한다.
 글꼴은 설치 뒤 Figma·PowerPoint·브라우저를 다시 열면 보인다.
+판 번호는 `VERSION`에 있고 바뀐 내용은 [`CHANGELOG.md`](CHANGELOG.md)에 있다. 새 판을 낼 때는 사람이 `git tag v0.6.0`처럼 태그를 달면, 다른 직원의 `doctor.sh`가 「새 판 있음」을 알려 준다.
 </details>
 
 ---
@@ -142,7 +145,11 @@ fonts/                          Freesentation · Paperlogy 각 9굵기 TTF (SIL 
 assets/photos/                  회사 사진 81장 (회사소개서 마스터에서 추출, MANIFEST.md)
 templates/company-intro/        회사소개서 마스터 v3 HTML (발표 톤 참고)
 skills.tsv                      설치 매니페스트 — 승인 스킬의 정본
-install.sh · doctor.sh          설치 · 점검
+install.sh · doctor.sh          설치(커밋 훅 연결 포함) · 점검(판·훅·웹 검색 포함)
+START.md                        처음 한 번은 이 순서로 — 읽는 순서 · 커넥터 점검 · 첫 사업 30분
+CHANGELOG.md · VERSION          바뀐 것 · 판 번호(태그는 사람이 git tag v0.6.0)
+.githooks/pre-commit            커밋 전 셀프테스트 여섯 종 + 공개 범위 검사(core.hooksPath로 켠다)
+.github/ISSUE_TEMPLATE/         버그 신고 · 개선 요청 서식
 bids/                           (git 제외) 사업 폴더 — _STATE.md · 01~04 산출물 · logs/
 ```
 
@@ -193,6 +200,12 @@ bids/                           (git 제외) 사업 폴더 — _STATE.md · 01~0
 | 인력 데이터(성명·이력·4대보험) | 위키 색인 §I · Members · 인력구성 최신본 | 서식 구조만 (`staffing-table.md`) |
 | 재료 팩 목차 | `references/material-pack.md` | 서버와 스킬이 함께 지키는 계약 — 한쪽만 바꾸지 않는다 |
 | 완성 디자인 | Figma | 없음 — HTML은 초안이다 |
+
+---
+
+## 💬 문제가 생기면
+
+저장소에 이슈를 올린다 — `.github/ISSUE_TEMPLATE/`의 「버그 신고」 또는 「개선 요청」 서식. 급하면 사내 #제안서 채널(자리표시 — 채울 것)에 올린다. 이슈에는 회사 사실·실명·공고번호·금액을 지우고 올린다.
 
 ---
 
