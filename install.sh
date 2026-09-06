@@ -60,15 +60,18 @@ copy_skill_dir(){ # $1=repo_root  $2=dest_name
 install_git(){ # $1=name $2=source
   local name="$1" source="$2" tmp
   # 이 저장소 자신(vax-proposal)은 clone 없이 로컬에서 바로 복사한다
-  if [ "$name" = "vax-proposal" ]; then copy_skill_dir "$DIR/skills/vax-proposal" "$name"; 
+  if [ "$name" = "vax-proposal" ]; then copy_skill_dir "$DIR/skills/vax-proposal" "$name" || true; 
     if [ -f "$DIR/skills/vax-proposal/scripts/requirements.txt" ]; then log "pip 의존성(ddgs·requests·bs4·pillow) 설치"; python3 -m pip install -q -r "$DIR/skills/vax-proposal/scripts/requirements.txt" 2>/dev/null || python -m pip install -q -r "$DIR/skills/vax-proposal/scripts/requirements.txt" 2>/dev/null || log "⚠ pip 실패 — 수동: pip install -r skills/vax-proposal/scripts/requirements.txt"; fi
-    return; fi
+    return 0; fi
   tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' RETURN
   log "clone $source"
   git clone --depth 1 "$source" "$tmp/repo" >/dev/null 2>&1 || { log "⚠ clone 실패"; return 1; }
-  copy_skill_dir "$tmp/repo" "$name"
-  [ -f "$tmp/repo/requirements.txt" ] && { log "pip 의존성 설치"; python3 -m pip install -q -r "$tmp/repo/requirements.txt" || log "⚠ pip 실패 — 수동 설치"; }
-  [ "$name" = "deep-research" ] && { python3 -m pip install -q pyyaml 2>/dev/null || true; }
+  copy_skill_dir "$tmp/repo" "$name" || true
+  # `[ ] && { }`를 함수 마지막 줄에 두면 조건이 거짓일 때 함수가 1을 돌려 set -e가 스크립트를 죽인다
+  # (2026-09-06 실측 — vax-exit-kit에 requirements.txt가 없어 그 뒤의 agents·/bid-loop 명령·커밋 훅·글꼴 단계가 새 PC에서 전혀 돌지 않았다). if 로 쓰고 0을 돌려준다.
+  if [ -f "$tmp/repo/requirements.txt" ]; then log "pip 의존성 설치"; python3 -m pip install -q -r "$tmp/repo/requirements.txt" 2>/dev/null || python -m pip install -q -r "$tmp/repo/requirements.txt" 2>/dev/null || log "⚠ pip 실패 — 수동 설치"; fi
+  if [ "$name" = "deep-research" ]; then python3 -m pip install -q pyyaml 2>/dev/null || python -m pip install -q pyyaml 2>/dev/null || true; fi
+  return 0
 }
 
 install_npx(){ # $1=name $2=source
@@ -109,11 +112,12 @@ while IFS=$'\t' read -r name method source TARGETS note; do
   if [ "$LIST_ONLY" = 1 ]; then printf '  %-16s %-12s %s\n' "$name" "$method" "$source"; continue; fi
   hdr "$name  ($method)"
   case "$method" in
-    git)         install_git "$name" "$source" ;;
-    npx)         install_npx "$name" "$source" ;;
-    marketplace) install_marketplace "$name" "$source" "${note:-}" ;;
-    builtin)     install_builtin "$name" ;;
-    mcp)         install_mcp "$name" "$source" ;;
+    # 한 항목이 실패해도 다음 항목과 뒤의 agents·commands·훅·글꼴은 계속 깐다(set -e 방어)
+    git)         install_git "$name" "$source" || log "⚠ $name 설치 실패 — 다음 항목 계속" ;;
+    npx)         install_npx "$name" "$source" || log "⚠ $name 설치 실패 — 다음 항목 계속" ;;
+    marketplace) install_marketplace "$name" "$source" "${note:-}" || true ;;
+    builtin)     install_builtin "$name" || true ;;
+    mcp)         install_mcp "$name" "$source" || log "⚠ $name 등록 실패 — 다음 항목 계속" ;;
     *) log "⚠ 알 수 없는 method: $method" ;;
   esac
 done < "$MANIFEST"
@@ -158,4 +162,10 @@ if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then
   else bash "$DIR/fonts/install-fonts.sh" || log "⚠ 글꼴 설치 실패 — 수동: bash fonts/install-fonts.sh"; fi
 fi
 
-hdr "완료. marketplace 항목은 위 ⓘ 안내대로 Claude Code 에서 1회 실행하세요."
+# 설치 결과 확인 — 직원 PC에서 「깔렸다」고 믿고 끝나지 않게, 핵심 넷을 다시 본다
+hdr "설치 확인"
+[ -f "$HOME/.claude/skills/vax-proposal/SKILL.md" ] && log "✓ 스킬 vax-proposal" || log "✗ 스킬 vax-proposal 없음 — bash install.sh --force 다시"
+[ -f "$HOME/.claude/agents/proposal-critic.md" ] && log "✓ 비판자 에이전트" || log "✗ 비판자 에이전트 없음"
+[ -f "$HOME/.claude/commands/bid-loop.md" ] && log "✓ /bid-loop 명령" || log "✗ /bid-loop 명령 없음"
+python3 -c "import ddgs, requests, bs4, PIL" 2>/dev/null || python -c "import ddgs, requests, bs4, PIL" 2>/dev/null && log "✓ 파이썬 의존성" || log "✗ 파이썬 의존성 — pip install -r skills/vax-proposal/scripts/requirements.txt"
+hdr "완료. marketplace 항목은 위 ⓘ 안내대로 Claude Code 에서 1회 실행하세요. 이제 Claude에게 「준비 점검」이라고 말하면 나머지를 Claude가 확인합니다."
