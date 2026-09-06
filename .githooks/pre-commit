@@ -8,8 +8,17 @@ S="$DIR/skills/vax-proposal/scripts"
 FAIL=0
 
 # 파이썬 실행 파일: python3 → python 순으로 찾는다(윈도우에는 python3가 없을 수 있다).
-PY=""; for c in python3 python; do command -v "$c" >/dev/null 2>&1 && { PY="$c"; break; }; done
-if [ -z "$PY" ]; then echo "✗ 파이썬이 없어 셀프테스트를 못 돌린다 — 커밋 거부"; exit 1; fi
+# 실제로 돌아가는 것만 고른다(윈도우 스토어 stub·PATH 차이 대비). py -3(윈도우 실행기)도 본다.
+PY=""
+for c in python3 python "py -3"; do
+  if $c -c "import sys" >/dev/null 2>&1; then PY="$c"; break; fi
+done
+if [ -z "$PY" ]; then
+  for c in "$LOCALAPPDATA/Programs/Python/Python312/python.exe" "$LOCALAPPDATA/Programs/Python/Python313/python.exe" /usr/bin/python3; do
+    [ -x "$c" ] && "$c" -c "import sys" >/dev/null 2>&1 && { PY="$c"; break; }
+  done
+fi
+if [ -z "$PY" ]; then echo "⚠ 파이썬을 못 찾아 셀프테스트를 건너뛴다 — bash doctor.sh 로 따로 확인할 것"; exit 0; fi
 
 run() { # $1=이름 $2=스크립트경로
   if [ ! -f "$2" ]; then echo "· $1 없음 — 건너뜀"; return; fi

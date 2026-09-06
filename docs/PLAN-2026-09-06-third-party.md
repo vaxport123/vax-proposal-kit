@@ -19,7 +19,7 @@
 - [1] 재료 팩 빈 서식: `references/material-pack.template.md` — 열 개 절(material-pack.md 계약 그대로) 빈 칸 + 어디서 채우나 한 줄씩. SKILL P0 「팩이 없으면 이 서식을 사람이 채운다」는 묶음 C가 SKILL에 적는다(파일 소유 분리) — B는 서식만.
 - [5] 승인 게이트 기계화: 계획서(07)에 `## 승인` 절(승인자 · 일시 · 「고스트 덱 승인」 문구)이 없으면 lint P9 「상」. `_STATE.template.md`에 `승인: {고스트덱: -, 승인자: -, 일시: -}` 칸. bid-loop P6-계획 출구에 「승인 절 있음」 조건. deck.md §2-6에 서식.
 - [7] 웹 재료를 사실로 옮기는 실수: lint L14 — `03a_페인포인트.md` 계열 문서에서 출처 열이 비었거나 `03a_raw` 파일명·`duckduckgo`·`검색 결과`를 출처로 적었으면 「상」. 표 열 이름 「출처」 감지. writing.md §2에 한 줄.
-- [8] 공개 범위 검사: `scripts/repo_guard.py` — git 추적 파일(bids/ 제외) 전체에서 공고번호 패턴(`R\d{2}[A-Z]{2}\d{8}` 등 나라장터 형식), 원 단위 금액(`\d{1,3}(,\d{3}){2,}원`), 실명+직함 패턴, 실제 발주처 이름 목록(`repo_guard.deny.txt`에 한 줄씩 — 초기값: 순천·순천캠퍼스·국립순천대) 을 찾아 보고. `--selftest`. 지금 저장소에서 걸리는 곳(writing.md·deck.md·layouts.md·figma-howto.md·README 실전 기록 등)을 **예시문화재단 예시로 바꾸거나 일반화**해 통과시킨다. 단 README 「실전 기록」과 CHANGELOG는 사업명 없이 「대학 캠퍼스 VR 건」처럼.
+- [8] 공개 범위 검사: `scripts/repo_guard.py` — git 추적 파일(bids/ 제외) 전체에서 공고번호 패턴(`R\d{2}[A-Z]{2}\d{8}` 등 나라장터 형식), 원 단위 금액(`\d{1,3}(,\d{3}){2,}원`), 실명+직함 패턴, 실제 발주처 이름 목록(`repo_guard.deny.txt`에 한 줄씩 — 초기값: 이번 사업의 발주처·현장 고유명사) 을 찾아 보고. `--selftest`. 지금 저장소에서 걸리는 곳(writing.md·deck.md·layouts.md·figma-howto.md·README 실전 기록 등)을 **예시문화재단 예시로 바꾸거나 일반화**해 통과시킨다. 단 README 「실전 기록」과 CHANGELOG는 사업명 없이 「대학 캠퍼스 VR 건」처럼.
 - 예시 세트(`examples/`)를 새 서식(승인 절·출처 열)에 맞춰 갱신하고 lint 통과 유지. 비판자 A9에 「출처가 03a_raw」 지적 추가.
 
 ## 묶음 C — 재사용·재개·수집 견고성 (브랜치 fix/c-reuse · 트리 wt-c)

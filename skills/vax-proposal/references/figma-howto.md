@@ -3,7 +3,7 @@
 > **한 장에 한 호출로 만든다. 장 하나가 끝나면 `_BUILD_STATE.md`를 갱신한다. Figma 토큰이 끊기면(30분마다) 이 상태 파일부터 읽고 이어 간다.**
 > 상태 파일의 「장별 노드 ID」 표는 `snapshotIds()`(figma_slides_helpers.js)를 돌려 채운다. 반쯤 만든 덱을 기억으로 이어 붙이지 않는다.
 
-`deck.md`가 「무엇이어야 하는가」라면 이 파일은 「어떻게 하면 되더라」다. 2026-09-04 순천캠퍼스 VR 덱 두 개(24장·46장)를 만들며 확인한 것이고,
+`deck.md`가 「무엇이어야 하는가」라면 이 파일은 「어떻게 하면 되더라」다. 2026-09-04 대학 캠퍼스 VR 건 덱 두 개(24장·46장)를 만들며 확인한 것이고,
 틀린 것이 발견되면 고친다. 여기 적힌 좌표·크기는 **기본값**이다. 장의 내용에 따라 바꿔도 된다. 전 장 같아야 하는 것은 헤더와 쪽번호만(`deck.md` §4).
 
 ## 전제
@@ -43,7 +43,7 @@
 ## 시그니처·사진
 - 빈 사각형을 만들고 `upload_assets(nodeIds, scaleMode)`로 채운다: 시그니처 FIT(46곳 한 번에), 사진 FILL. URL마다 `curl -F file=@…` 한 번, 10분 안에.
 - 발주처 CI 구하기(5분): 기관 홈페이지 로고를 저장하고 주색 hex를 딴다. 「CI·BI 안내」 페이지가 있으면 그 값을 우선한다. 없으면 로고 주색 하나만 쓰고 보조색은 만들지 않는다.
-  로고 파일과 hex는 `bids/<사업>/ci/`에 두고 `_STATE.md`에 적는다. 예: 한국청년기업가정신재단 `#1b4fc4` · 한국자살예방협회 `#e8202a` · KITECH `#0047bb` · 국립순천대 `#0068B0`.
+  로고 파일과 hex는 `bids/<사업>/ci/`에 두고 `_STATE.md`에 적는다. 예: 한국청년기업가정신재단 `#1b4fc4` · 한국자살예방협회 `#e8202a` · KITECH `#0047bb`.
 - 웹에서 딴 이미지 URL이 제품 컷이 아닐 수 있다(메타 페이지의 lookaside URL은 세로 1080×1920이었다). 넣기 전 `screenshot`으로 한 번 본다. 아니면 빼고 MANIFEST에 「미확인 → 제외」.
 
 ## 그림 그리기 (2026-09-05 도식 10장 실측)
@@ -69,7 +69,7 @@
 - 그다음 `deck.md` §6대로 전 장 화면을 찍어 `bids/<사업>/shots/`에 받고 비판자에 넘긴다. 내보내기는 pdf면 Figma에서, hwp·pptx면 하류 스킬(`vax-exit-kit` · `doc-gen` · `claw-hwp`).
 
 ## 참고 덱
-- 순천캠퍼스 VR 24장(네이티브 노드 · 내용 누락) https://www.figma.com/slides/X1gbJJ0suIxbIeT75bkNzC ·
+- 대학 캠퍼스 VR 건 24장(네이티브 노드 · 내용 누락) https://www.figma.com/slides/X1gbJJ0suIxbIeT75bkNzC ·
   46장(SVG 도식 · 디자인 무너짐) https://www.figma.com/slides/8uXlvJ6fp2Z2DC1LHZL41n — 둘을 나란히 보면 `deck.md` §5가 왜 있는지 보인다.
 - 회사가 손으로 완성한 3덱(44~54장): 재도전 인식개선 https://www.figma.com/slides/BN80Dl0GVyKdoucXKPpsFg ·
   생명지킴이 영상 https://www.figma.com/slides/rNBq9cTJOZeg7wtDiPyjmB · 공정자동화 3D https://www.figma.com/slides/tmZb7iG9WhrrkHWrT5I5kc

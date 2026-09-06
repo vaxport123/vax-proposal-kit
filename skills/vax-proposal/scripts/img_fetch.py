@@ -126,7 +126,7 @@ def selftest():
         if not c:
             fails.append(n)
 
-    ok("슬러그", _slug("순천 캠퍼스/3층!") == "순천-캠퍼스-3층")
+    ok("슬러그", _slug("예시 캠퍼스/3층!") == "예시-캠퍼스-3층")
     ok("PNG 판별", _sniff_ext(b"\x89PNG\r\n\x1a\n" + b"0" * 10) == "png")
     try:
         _sniff_ext(b"<html><body>hi</body></html>")

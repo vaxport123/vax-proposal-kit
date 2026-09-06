@@ -1,5 +1,5 @@
 // figma_slides_helpers.js — Figma Slides 덱을 `use_figma` 스크립트로 만들 때 쓰는 공통 프리미티브.
-// 2026-09-06: 위에서 아래로 쌓는 조합 함수(chrome·bar·body·part·toc)를 지웠다. AI가 좌표를 계산해 흘려 쌓은 화면은 문서를 늘려 붙인 것이 됐고 재배치가 끝나지 않았다(순천 v5 실측).
+// 2026-09-06: 위에서 아래로 쌓는 조합 함수(chrome·bar·body·part·toc)를 지웠다. AI가 좌표를 계산해 흘려 쌓은 화면은 문서를 늘려 붙인 것이 됐고 재배치가 끝나지 않았다(대학 캠퍼스 VR 건 v5 실측).
 // 레이아웃은 증거 유형별 컴포넌트에서 고른다(deck.md §5 — 회사 손 덱 3개에서 뽑는 것이 다음 일). 이 파일은 그 컴포넌트를 채우거나, 지도·연결도·배치도·타임라인(figma_slides_diagrams.js)을 그릴 때 필요한 원자 함수만 둔다.
 // 모든 프리미티브는 appendChild 뒤에 x·y를 준다(Figma 공식 figma-use-slides 스킬의 「(-240,-240) 어긋남」 회피 — 순서를 바꾸지 말 것).
 // 노드 이름 규약(validate·retitle·leftovers가 이름으로 찾는다): title · closing · crumb · crumb-sec · page · caption · src · signature · photo-* · bg-*(rule·dot·th·tr·zone·path·arrow·stop·hmd…). 역할마다 이름 하나 — 간트 막대와 결론 배경에 같은 이름을 쓰면 재배치 스크립트가 막대를 끌고 간다.

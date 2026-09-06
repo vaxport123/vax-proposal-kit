@@ -34,7 +34,7 @@
 3. **받기**: `python3 scripts/img_fetch.py bids/<사업> <URL> --name <이름> --use "<슬라이드>" --page <출처 페이지> --license "<판단 한 줄>"`.
    짧은 변 600px 미만·HTML 응답·사용권 빈칸은 거부된다. 1920보다 크면 줄여 저장한다. 같은 URL은 다시 받지 않는다. `bids/<사업>/img/MANIFEST.md`에 한 줄이 쌓인다.
 4. **넣기**: Figma에서는 빈 사각형을 만들고 `upload_assets(nodeIds, scaleMode FILL)`로 채운다(`figma-howto.md` 시그니처와 같은 방법). HTML에는 `![캡션](img/파일)`.
-5. **캡션**: 사진 아래 12~13px 회색으로 출처를 적는다(「사진: 국립순천대학교 제공」). 공공누리·CC는 요구 표기 그대로.
+5. **캡션**: 사진 아래 12~13px 회색으로 출처를 적는다(「사진: 예시대학교 제공」). 공공누리·CC는 요구 표기 그대로.
 6. **검사**: 덱에 들어간 사진이 전부 MANIFEST에 있나(`proposal-critic` B8). 없는 것은 뺀다.
 
 ## 4. 하지 않는 것

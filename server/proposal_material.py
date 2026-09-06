@@ -18,9 +18,9 @@
 사용 (서버 pipeline 폴더에서)
   proposal_material.py --selftest
   proposal_material.py --list                    # 게이트(도전·우리담당·마감전) 통과 목록
-  proposal_material.py --no R26BK01695067        # 한 건, stdout
-  proposal_material.py --no R26BK01695067 --out /tmp/pack   # 마크다운 파일로도 저장
-  proposal_material.py --no R26BK01695067 --commit          # 위키에 쓴다
+  proposal_material.py --no R26EX00000001        # 한 건, stdout
+  proposal_material.py --no R26EX00000001 --out /tmp/pack   # 마크다운 파일로도 저장
+  proposal_material.py --no R26EX00000001 --commit          # 위키에 쓴다
   proposal_material.py --commit                  # 도전 전건(이미 같은 판본이 있으면 건너뜀)
 
 배포 순서는 server/README.md 「배포 순서」를 따른다(재료가 먼저 나와야 초안 자동 생성을 끊어도 팀이 비지 않는다).
@@ -570,7 +570,7 @@ def tech_price_from_body(body):
     b = body or ""
     tech = price = cut = None
     # 숫자가 앞에 오는 표현("90%의 기술평가")을 먼저, 뒤에 오는 표현("기술평가점수(90점)")을 다음에.
-    # "기술평가와 10%의 가격평가"처럼 뒤 항목 숫자를 잡는 실수를 막는다(실측 R26BK01711646: 10:10 오판).
+    # "기술평가와 10%의 가격평가"처럼 뒤 항목 숫자를 잡는 실수를 막는다(실측 R26EX00000001: 10:10 오판).
     for pat in (r"(\d{2,3})\s*%\s*의\s*기술", r"기술(?:능력)?\s*평가\s*점수\s*\(?\s*(\d{2,3})\s*점", r"기술(?:능력)?\s*평가\s*\(?\s*(\d{2,3})\s*(?:%|점)"):
         m = re.search(pat, b)
         if m:
@@ -1275,7 +1275,7 @@ def selftest():
     ok("md→블록: 인라인 코드", b[5]["paragraph"]["rich_text"][1]["annotations"]["code"])
     ok("배치: 50개 단위", [len(x) for x in batches([_blk("paragraph", "x")] * 120)] == [50, 50, 20])
     ok("공개 금지: IP·경로 잡음", forbidden("서버 100.79.44.59 의 /var/lib/vax") == ["사설망 IP", "서버 경로"])
-    ok("공개 금지: 깨끗하면 빈 목록", forbidden("조선왕릉 웹VR 190,000,000원") == [])
+    ok("공개 금지: 깨끗하면 빈 목록", forbidden("예시 웹VR 1억 9천만 원") == [])
     ok("유사도: 같은 글", sim("조선왕릉 웹VR", "조선왕릉 웹VR") == 1.0)
     ok("유사도: 다른 글", sim("조선왕릉", "육군 리더십") == 0.0)
     ok("낱말: 범용어 제외", "웹VR" in words("조선왕릉 웹VR 콘텐츠 제작 용역") and words("콘텐츠 제작 용역") == [])

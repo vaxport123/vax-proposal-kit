@@ -5,8 +5,8 @@
 답이 될 재료를 기계가 먼저 모아 둔다. 결과는 초안이 아니라 **재료**다 — 사실 확인·인용은 사람과 Claude가 원 페이지를 열어 한다.
 
 사용:
-  python3 probe_web.py --org "국립순천대학교" --kw "애니메이션 순천캠퍼스 VR 콘텐츠" --prev "2025 순천캠퍼스 VR 콘텐츠 제작" \
-      --type 대학 --out bids/순천캠퍼스VR/03a_raw.md [--max 5] [--fetch] [--news]
+  python3 probe_web.py --org "예시대학교" --kw "실감콘텐츠 전시관 VR" --prev "2025 예시 전시관 실감콘텐츠 제작" \
+      --type 대학 --out bids/예시전시관/03a_raw.md [--max 5] [--fetch] [--news]
   python3 probe_web.py --selftest              (오프라인 — 검색어 생성·숫자 문장 추출·서식)
   --type: 대학 | 공공기관 | 지자체 | 학교 | 공기업 | 기업 | 기타  (공식 데이터 사이트 링크가 달라진다)
   --fetch: 상위 결과 페이지를 열어 숫자가 든 문장을 뽑는다(한 페이지 10초 · 최대 12쪽). 없으면 검색 요약만.

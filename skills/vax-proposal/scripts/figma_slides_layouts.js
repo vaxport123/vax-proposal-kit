@@ -5,7 +5,7 @@
 //   const P = { accent:"#0068B0", deep:"#004A80", tint:"#E6F0F7", ink:"#141414", soft:"#4C4C4C", mid:"#6B7480", line:"#D3DAE3", face:"#F4F5F7", paper:"#FFFFFF", dark:"#0B1F33" };
 //   const s = figma.createSlide(row, 0);
 //   houseChrome(s, P, { crumb: "Ⅱ. 사업수행 부문  ·  1. 추진전략", title: "액션 타이틀 한 문장", emph: ["강조 구절"], sub: "부제 한 줄", closing: "발주처 시점 결론", page: "Ⅱ-3" });
-//   applyLayout(s, "L07", P, { texts: { chip: "순천캠퍼스 3층 · 대학 제공" }, cards: { c1: ["실측 스캔", "이틀 · ±3cm"], c2: [...], c3: [...] } });
+//   applyLayout(s, "L07", P, { texts: { chip: "예시대학교 3층 · 대학 제공" }, cards: { c1: ["실측 스캔", "이틀 · ±3cm"], c2: [...], c3: [...] } });
 //   → 사진 자리(name "photo-*")는 upload_assets 로 채운다. 표(L11)·간트(L12)는 자리만 잡아 주니 figures_svg.py SVG 를 placeSvg 로 그 자리에 넣는다.
 // 하우스 관례(세 덱 공통): 헤더 띠 0~90 · 브레드크럼 23 · 발주처 로고 우상단 · 제목 48에 강조색 1~2구절 · 부제 20 회색 · 본문 y270~900 · 결론 띠 y930 h76(왼쪽 강조 막대) · 쪽번호 하단 중앙 15.
 // 결론 띠는 회사 관례상 거의 모든 장에 있다. 단 제목을 되풀이하지 않고 발주처 시점으로 쓴다(deck.md §2-2).
