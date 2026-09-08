@@ -87,6 +87,7 @@ padding:1px 6px;font-weight:600}
 .fig{margin:18px 0}.fig svg{width:100%;height:auto;display:block}
 .foot{margin-top:52px;padding-top:16px;border-top:1px solid var(--hairline);color:var(--mid);font-size:13px}
 @media print{.wrap{padding:0}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+@page{size:__PAGE_SIZE__;margin:18mm}
 """
 
 # 테마 — **칠하기 전에** 정한다(나중에 정하면 흰 화면이 번쩍인다). ERP와 같은 localStorage 키.
@@ -179,7 +180,19 @@ def check_forbidden(md):
     return [why for pat, why in FORBIDDEN if re.search(pat, md, re.I)]
 
 
-def build(md, title, kick="제안서 초안", md_link=""):
+PAPER_WIDTH = {("A4", "portrait"): 880, ("A4", "landscape"): 1120, ("A3", "portrait"): 1120, ("A3", "landscape"): 1400}
+
+
+def page_css(paper="A4", orient="종"):
+    """용지·방향 → @page 크기와 본문 폭. 종=portrait, 횡=landscape (한준 2026-09-08 명령 인자)."""
+    paper = (paper or "A4").upper()
+    o = "landscape" if str(orient).strip() in ("횡", "가로", "landscape") else "portrait"
+    w = PAPER_WIDTH.get((paper, o), 880)
+    return (BASE_CSS.replace("__PAGE_SIZE__", "%s %s" % (paper, o))
+            .replace(".wrap{max-width:880px", ".wrap{max-width:%dpx" % w))
+
+
+def build(md, title, kick="제안서 초안", md_link="", paper="A4", orient="종"):
     foot = ""
     if md_link:
         foot = '원본(마크다운): <a href="%s">%s</a> · ' % (html.escape(md_link), html.escape(md_link))
@@ -194,7 +207,7 @@ def build(md, title, kick="제안서 초안", md_link=""):
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">\n'
         '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">\n'
-        + THEME_JS + "\n<style>\n" + ui_tokens.css() + BASE_CSS + "</style>\n</head>\n"
+        + THEME_JS + "\n<style>\n" + ui_tokens.css() + page_css(paper, orient) + "</style>\n</head>\n"
         '<body><div class="wrap">\n'
         '<div class="dhead"><div class="kick">%s</div><h1>%s</h1><div class="dmeta">%s</div></div>\n'
         % (html.escape(kick), html.escape(title), meta)
@@ -225,7 +238,9 @@ def selftest():
     ok("fig 블록이 SVG로", f.count('<div class="fig"><svg') == 2 and "실측" in f)
     ok("fig 색은 토큰 변수", "var(--brand)" in f)
     ok("깨진 fig도 경고로 남는다", "확인필요" in f and "JSON 오류" in f)
-    print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과" % 11)
+    ok("용지·방향 → @page (A3 횡)", "size:A3 landscape" in page_css("A3", "횡") and "max-width:1400px" in page_css("A3", "횡"))
+    ok("기본은 A4 종", "size:A4 portrait" in page_css() and "__PAGE_SIZE__" not in page_css())
+    print(("selftest 실패 " + " | ".join(fails)) if fails else "selftest OK — %d건 통과" % 13)
     return 1 if fails else 0
 
 
@@ -236,6 +251,8 @@ def main():
     ap.add_argument("title", nargs="?")
     ap.add_argument("--md-link", default="", help="하단에 걸 원본 md 파일명(같은 폴더)")
     ap.add_argument("--kick", default="제안서 초안", help="제목 위 작은 머리글")
+    ap.add_argument("--paper", default="A4", help="용지 A4|A3 (인테이크 ⓪ · RFP 작성 규칙이 우선)")
+    ap.add_argument("--orient", default="종", help="방향 종|횡")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
     if a.selftest:
@@ -248,7 +265,7 @@ def main():
     if bad:
         print("공개 금지 정보가 있어 렌더하지 않는다: " + " · ".join(bad), file=sys.stderr)
         return 1
-    page = build(md, a.title, a.kick, a.md_link)
+    page = build(md, a.title, a.kick, a.md_link, a.paper, a.orient)
     os.makedirs(os.path.dirname(a.dst) or ".", exist_ok=True)
     open(a.dst, "w", encoding="utf-8", newline="").write(page)
     print("%s → %s (%d bytes · 표 %d개 · 확인필요 %d건)"
