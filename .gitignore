@@ -21,3 +21,6 @@ Thumbs.db
 .agents/
 .claude/
 skills-lock.json
+
+# 모의 설치(임시 홈) 때 pip 캐시가 저장소에 떨어진 적 있음(2026-09-08)
+pip/

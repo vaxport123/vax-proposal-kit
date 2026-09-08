@@ -25,9 +25,12 @@
 
 ## ⚡ 60초 시작
 
+**더블클릭 설치** — 윈도우는 [`install.bat`](install.bat), 맥은 [`install.command`](install.command)를 두 번 누른다. Git이 없으면 내려받기 화면을 열어 주고, 이름을 한 번 묻고(노션 「제안 방식 — 이름」의 열쇠), 스킬·비판자·명령·글꼴을 최신으로 덮어쓴다. 저장소 밖에서 `install.bat`만 받아 실행해도 홈 폴더에 저장소를 받아 설치한다.
+
+명령줄이 편하면:
 ```bash
 git clone https://github.com/vaxport123/vax-proposal-kit
-cd vax-proposal-kit && bash install.sh     # 스킬 → ~/.claude/skills · 글꼴 → 사용자 글꼴 폴더 (관리자 권한 불필요)
+cd vax-proposal-kit && bash install.sh --me 홍길동   # 스킬 → ~/.claude/skills · 글꼴 → 사용자 글꼴 폴더 (관리자 권한 불필요)
 bash doctor.sh                             # 스킬·글꼴·파이썬·렌더러·판·커밋 훅·웹 검색·저장소 점검 + 커넥터 확인 방법
 ```
 

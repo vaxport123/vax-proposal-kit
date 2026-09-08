@@ -9,3 +9,5 @@
 *.jpg binary
 *.jpeg binary
 *.webp binary
+*.bat text eol=crlf
+*.command text eol=lf

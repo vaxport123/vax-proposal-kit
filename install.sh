@@ -10,14 +10,14 @@
 #       ~/.codex/skills)에 설치한다. vax-wiki-gateway/skills/install.sh 와 같은 방식이다.
 set -euo pipefail
 
-FORCE=0; LIST_ONLY=0; FONTS=1; ME=""
+FORCE=0; LIST_ONLY=0; FONTS=1; ME=""; ME_GIVEN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --force) FORCE=1 ;;
     --list)  LIST_ONLY=1 ;;
     --no-fonts) FONTS=0 ;;
-    --me) shift; ME="${1:-}" ;;
-    --me=*) ME="${1#--me=}" ;;
+    --me) shift; ME="${1:-}"; ME_GIVEN=1 ;;
+    --me=*) ME="${1#--me=}"; ME_GIVEN=1 ;;
     *) echo "알 수 없는 옵션: $1"; exit 2 ;;
   esac
   shift
@@ -170,11 +170,12 @@ fi
 # (한준 2026-09-08 "내가 클로드 쓰는 게 fox가 아닐 때도 있다" — 공용 계정·다른 계정으로 써도 내 페이지가 열려야 한다)
 hdr "제안 방식 담당자(나는 누구)"
 ME_FILE="$HOME/.vax-proposal/me.json"
-if [ -f "$ME_FILE" ] && [ -z "$ME" ] && [ "$FORCE" = 0 ]; then
+if [ -f "$ME_FILE" ] && [ -z "$ME" ]; then
   log "· 이미 있음: $(tr -d '
-' < "$ME_FILE" | cut -c1-80)  (바꾸려면 --me 이름)"
+' < "$ME_FILE" | cut -c1-80)  (바꾸려면 --me 이름, 또는 Claude에게 「나는 ○○」)"
 else
-  if [ -z "$ME" ] && [ -t 0 ]; then printf '  이 PC에서 제안서 쓰는 사람 이름(노션 「제안 방식 — 이름」과 같게, 비우면 나중에 Claude가 묻는다): '; read -r ME || ME=""; fi
+  # --me 를 받았으면(빈 값이라도) 다시 묻지 않는다 — install.bat 이 이미 물었다
+  if [ -z "$ME" ] && [ "$ME_GIVEN" = 0 ] && [ -t 0 ]; then printf '  이 PC에서 제안서 쓰는 사람 이름(노션 「제안 방식 — 이름」과 같게, 비우면 나중에 Claude가 묻는다): '; read -r ME || ME=""; fi
   if [ -n "$ME" ]; then
     mkdir -p "$HOME/.vax-proposal"
     printf '{"name": "%s", "page_id": "", "set_at": "%s"}
