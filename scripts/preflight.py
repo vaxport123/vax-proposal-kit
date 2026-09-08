@@ -96,6 +96,16 @@ def checks(online=False):
     fc = font_count()
     add("fonts", False, fc >= 18, "글꼴 %d/18" % fc, None if fc >= 18 else "피그마 제작 전에 `bash fonts/install-fonts.sh` 를 돌리고 피그마를 다시 여십시오(글꼴 %d/18)." % fc, claude_can=True)
 
+    me_path = os.path.join(HOME, ".vax-proposal", "me.json")
+    me_name = ""
+    try:
+        import json as _json
+        me_name = (_json.load(open(me_path, encoding="utf-8")).get("name") or "").strip() if os.path.exists(me_path) else ""
+    except Exception:
+        me_name = ""
+    add("me", False, bool(me_name), "제안 방식 담당자 " + ("「%s」" % me_name if me_name else "미정(~/.vax-proposal/me.json 없음)"),
+        None if me_name else "이 PC에서 제안서를 쓰는 사람 이름을 알려 주십시오(노션 「제안 방식 — 이름」과 같게). Claude가 ~/.vax-proposal/me.json 에 저장합니다 — 로그인 계정이 fox든 공용이든 이 이름으로 내 페이지를 찾습니다.", claude_can=True)
+
     cmd = os.path.exists(os.path.join(HOME, ".claude", "commands", "bid-loop.md"))
     add("bidloop", False, cmd, "/bid-loop 명령 " + ("있음" if cmd else "없음"), None if cmd else "루프형(야간 자동)으로 쓸 때만: `bash install.sh --force`", claude_can=True)
 

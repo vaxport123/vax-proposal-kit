@@ -4,19 +4,23 @@
 #       bash install.sh --force    (기존 설치 덮어쓰기)
 #       bash install.sh --list     (매니페스트만 출력)
 #       bash install.sh --no-fonts (글꼴 설치 생략)
+#       bash install.sh --me 홍길동 (이 PC에서 제안서 쓰는 사람 — 노션 「제안 방식 — 이름」과 같게. 없으면 묻는다)
 #
 # 원리: skills.tsv(=승인 스킬의 정본)를 읽어 각 스킬을 내 에이전트 환경(~/.claude/skills,
 #       ~/.codex/skills)에 설치한다. vax-wiki-gateway/skills/install.sh 와 같은 방식이다.
 set -euo pipefail
 
-FORCE=0; LIST_ONLY=0; FONTS=1
-for a in "$@"; do
-  case "$a" in
+FORCE=0; LIST_ONLY=0; FONTS=1; ME=""
+while [ $# -gt 0 ]; do
+  case "$1" in
     --force) FORCE=1 ;;
     --list)  LIST_ONLY=1 ;;
     --no-fonts) FONTS=0 ;;
-    *) echo "알 수 없는 옵션: $a"; exit 2 ;;
+    --me) shift; ME="${1:-}" ;;
+    --me=*) ME="${1#--me=}" ;;
+    *) echo "알 수 없는 옵션: $1"; exit 2 ;;
   esac
+  shift
 done
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -160,6 +164,25 @@ if [ "$FONTS" = 1 ] && [ -f "$DIR/fonts/install-fonts.sh" ]; then
   hdr "fonts  (Freesentation · Paperlogy)"
   if [ "$FORCE" = 1 ]; then bash "$DIR/fonts/install-fonts.sh" --force || log "⚠ 글꼴 설치 실패 — 수동: bash fonts/install-fonts.sh"
   else bash "$DIR/fonts/install-fonts.sh" || log "⚠ 글꼴 설치 실패 — 수동: bash fonts/install-fonts.sh"; fi
+fi
+
+# 나는 누구 — 노션 개인 「제안 방식」 페이지를 찾는 열쇠. 로그인한 Claude·노션 계정이 아니라 이 파일로 정한다
+# (한준 2026-09-08 "내가 클로드 쓰는 게 fox가 아닐 때도 있다" — 공용 계정·다른 계정으로 써도 내 페이지가 열려야 한다)
+hdr "제안 방식 담당자(나는 누구)"
+ME_FILE="$HOME/.vax-proposal/me.json"
+if [ -f "$ME_FILE" ] && [ -z "$ME" ] && [ "$FORCE" = 0 ]; then
+  log "· 이미 있음: $(tr -d '
+' < "$ME_FILE" | cut -c1-80)  (바꾸려면 --me 이름)"
+else
+  if [ -z "$ME" ] && [ -t 0 ]; then printf '  이 PC에서 제안서 쓰는 사람 이름(노션 「제안 방식 — 이름」과 같게, 비우면 나중에 Claude가 묻는다): '; read -r ME || ME=""; fi
+  if [ -n "$ME" ]; then
+    mkdir -p "$HOME/.vax-proposal"
+    printf '{"name": "%s", "page_id": "", "set_at": "%s"}
+' "$ME" "$(date +%Y-%m-%d)" > "$ME_FILE"
+    log "✓ 저장: $ME_FILE (name=$ME) — Claude가 첫 작업 때 노션 페이지 ID를 채운다"
+  else
+    log "△ 비움 — Claude가 첫 작업 때 「이 PC에서 제안서 쓰는 사람 이름」을 한 번 묻고 저장한다"
+  fi
 fi
 
 # 설치 결과 확인 — 직원 PC에서 「깔렸다」고 믿고 끝나지 않게, 핵심 넷을 다시 본다
